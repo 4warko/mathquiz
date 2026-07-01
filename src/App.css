@@ -362,11 +362,27 @@ button.pill { min-height: var(--tap); }
   box-shadow: var(--shadow-md);
 }
 .eq-row { display: flex; align-items: center; justify-content: center; gap: var(--s-2); flex-wrap: wrap; }
-/* Ten-frame style rows of 5 keep big groups easy to count. */
-.eq-group { display: grid; grid-template-columns: repeat(5, auto); justify-items: center; gap: 3px; }
+/* Fixed em-sized cells + centered wrapping give tidy, even rows (max 5 wide)
+   at any count, instead of ragged auto-sized columns. */
+.eq-group,
+.sub-grid,
+.panel__items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 0.15em;
+  max-width: 7.2em; /* 5 cells + gaps → at most 5 per row */
+}
 .eq-plus { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); color: var(--eq-accent); }
-.sub-grid { display: grid; grid-template-columns: repeat(5, auto); justify-content: center; gap: 3px; }
-.emoji { line-height: 1.05; }
+.emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3em;
+  height: 1.3em;
+  line-height: 1;
+}
 .emoji.is-gone { opacity: 0.28; filter: grayscale(1); }
 .eq-line {
   font-family: var(--font-display);
@@ -401,6 +417,9 @@ button.pill { min-height: var(--tap); }
 .compare { display: flex; gap: var(--s-3); width: 100%; }
 .panel {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--s-4) var(--s-2);
   background: rgba(255, 255, 255, 0.7);
   border: 3px solid var(--ink);
@@ -411,14 +430,7 @@ button.pill { min-height: var(--tap); }
 .panel[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
 .panel[data-state='dim'] { opacity: 0.4; }
 .panel[data-state='hint'] { border-color: var(--success); animation: hintPulse 1.1s ease-in-out infinite; }
-.panel__items {
-  display: grid;
-  grid-template-columns: repeat(5, auto);
-  justify-content: center;
-  align-content: center;
-  gap: 3px;
-  min-height: 120px;
-}
+.panel__items { min-height: 120px; }
 
 .toast {
   align-self: center;
