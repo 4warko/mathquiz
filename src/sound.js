@@ -8,7 +8,7 @@ function getCtx() {
   const AC = window.AudioContext || window.webkitAudioContext
   if (!AC) return null
   if (!ctx) ctx = new AC()
-  if (ctx.state === 'suspended') ctx.resume()
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {})
   return ctx
 }
 

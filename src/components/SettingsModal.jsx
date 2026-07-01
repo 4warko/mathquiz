@@ -1,28 +1,47 @@
-import { useEffect, useState } from 'react'
-import useFocusOnMount from '../useFocusOnMount'
+import { useEffect, useRef, useState } from 'react'
 
-// A small "grown-up" area: toggle sound and (with a confirm step) reset progress.
-// Rendered as an accessible dialog overlay so it works from any screen.
+// Accessible modal dialog: focus is trapped while open and restored to the
+// trigger on close (WAI-ARIA dialog pattern + WCAG 2.4.3).
 export default function SettingsModal({ muted, onToggleMute, onReset, onClose }) {
-  const titleRef = useFocusOnMount()
+  const dialogRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const previouslyFocused = document.activeElement
+    const dialog = dialogRef.current
+    dialog?.querySelector('h2')?.focus()
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab') return
+      const items = Array.from(
+        dialog?.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])') || [],
+      ).filter((el) => !el.disabled && el.offsetParent !== null)
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus()
+    }
   }, [onClose])
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
+        ref={dialogRef}
         className="modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="settings-title" className="modal__title" ref={titleRef} tabIndex={-1}>
+        <h2 id="settings-title" className="modal__title" tabIndex={-1}>
           Grown-Up Zone
         </h2>
 

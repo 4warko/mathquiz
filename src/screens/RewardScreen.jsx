@@ -9,7 +9,7 @@ const CHEERS = {
 }
 
 export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue }) {
-  const labelRef = useFocusOnMount()
+  const headingRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
   const cheer = useMemo(() => {
     const arr = CHEERS[stars] || CHEERS[1]
@@ -45,7 +45,7 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
       </div>
 
       <div className="reward__card">
-        <div className="reward__label" ref={labelRef} tabIndex={-1}>LEVEL {levelNum} COMPLETE</div>
+        <p className="reward__label">LEVEL {levelNum} COMPLETE</p>
 
         <div className="stars">
           {[0, 1, 2].map((i) => (
@@ -55,14 +55,10 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
 
         <div className="reward__animal" aria-hidden="true">{cfg.unlock.emoji}</div>
 
-        {justNew ? (
-          <>
-            <div className="reward__title">You found {cfg.unlock.name}! 🎉</div>
-            <div className="reward__sub">A new friend joined your collection</div>
-          </>
-        ) : (
-          <div className="reward__title">{cfg.unlock.name} is so proud!</div>
-        )}
+        <h1 className="reward__title" ref={headingRef} tabIndex={-1}>
+          {justNew ? `You found ${cfg.unlock.name}! 🎉` : `${cfg.unlock.name} is so proud!`}
+        </h1>
+        {justNew && <p className="reward__sub">A new friend joined your collection</p>}
 
         <div className="reward__cheer">{cheer}</div>
 

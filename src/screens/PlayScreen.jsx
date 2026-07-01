@@ -49,8 +49,13 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
       <div className="play__stage">
         <div className={`buddy${a?.correct ? ' buddy--cheer' : ''}`} aria-hidden="true">{cfg.unlock.emoji}</div>
 
+        {/* Persistent live region — reliably announces the result to screen readers. */}
+        <div className="sr-only" aria-live="assertive">
+          {a ? (a.correct ? 'Correct!' : 'Not quite, try again.') : ''}
+        </div>
+
         {a && (
-          <div className={`toast ${a.correct ? 'toast--ok' : 'toast--no'}`} role="status">
+          <div className={`toast ${a.correct ? 'toast--ok' : 'toast--no'}`} aria-hidden="true">
             {a.correct ? 'Yay! Correct! 🎉' : 'Oops — try again! 💪'}
           </div>
         )}
@@ -91,8 +96,8 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
       <div className="play__actions">
         {isNumberQ && (
           <div className="choices">
-            {(q.choices || []).map((v, idx) => (
-              <button key={idx} type="button" className="choice tap" data-state={numState(v)} onClick={() => onAnswer(v)}>
+            {(q.choices || []).map((v) => (
+              <button key={v} type="button" className="choice tap" data-state={numState(v)} onClick={() => onAnswer(v)}>
                 {v}
               </button>
             ))}

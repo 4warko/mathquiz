@@ -111,8 +111,11 @@ export default function App() {
     return () => window.removeEventListener('pointerdown', unlock)
   }, [])
 
-  // Persist progress, collection, and the sound preference whenever they change.
+  // Persist progress, collection, and the sound preference whenever they change
+  // (skip the first run — it would just rewrite what we loaded).
+  const didPersist = useRef(false)
   useEffect(() => {
+    if (!didPersist.current) { didPersist.current = true; return }
     try {
       localStorage.setItem(
         STORAGE_KEY,
@@ -164,14 +167,14 @@ export default function App() {
   }
 
   const answer = (value) => {
-    if (state.answered?.correct) return
     const q = state.questions[state.qIndex]
+    if (!q || state.answered?.correct) return
     resolve(value === q.answer, { value })
   }
 
   const answerCompare = (side) => {
-    if (state.answered?.correct) return
     const q = state.questions[state.qIndex]
+    if (!q || state.answered?.correct) return
     resolve(side === q.answerSide, { side })
   }
 
