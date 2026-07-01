@@ -1,53 +1,59 @@
-.app {
-  text-align: center;
-}
-
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.score {
-  color: #888;
-  margin-top: 0;
-}
-
-.quiz {
+/* Phone-sized game frame, centered on a dotted paper background. */
+.app-outer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
   align-items: center;
-  margin: 2rem 0;
-  font-size: 1.5rem;
+  justify-content: center;
+  background: #e7dcc4;
+  background-image: radial-gradient(#dccdb0 1.4px, transparent 1.4px);
+  background-size: 22px 22px;
+  font-family: 'Patrick Hand', cursive;
+  color: #41332a;
 }
 
-.quiz input {
-  font-size: 1.5rem;
-  padding: 0.5rem;
-  width: 8rem;
-  text-align: center;
-  border-radius: 8px;
-  border: 1px solid #555;
-  background: transparent;
-  color: inherit;
+.app-frame {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 920px;
+  overflow: hidden;
+  background: #fffaf0;
+  box-shadow: 0 18px 60px rgba(65, 51, 42, 0.35);
 }
 
-.quiz button {
-  font-size: 1rem;
-  padding: 0.6rem 1.4rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background-color: #646cff;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(-50%, -62%); }
 }
-
-.quiz button:hover {
-  background-color: #535bf2;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
 }
-
-.feedback {
-  font-size: 1.25rem;
-  min-height: 1.5rem;
+@keyframes popIn {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  70% { transform: scale(1.25) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cheerBounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-18px) rotate(4deg); }
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(115vh) rotate(720deg); opacity: 1; }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }

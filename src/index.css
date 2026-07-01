@@ -1,26 +1,25 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Patrick Hand', cursive, system-ui, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
+html,
 body {
   margin: 0;
-  min-height: 100vh;
-  display: flex;
-  place-items: center;
-  justify-content: center;
+  padding: 0;
 }
 
 #root {
   width: 100%;
-  max-width: 480px;
-  padding: 2rem;
+}
+
+button {
+  font-family: inherit;
 }
