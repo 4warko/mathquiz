@@ -23,4 +23,8 @@ export const LEVELS = [
   { name: 'Clover Field',     type: 'bond',    sumMax: 10, animals: ['🐴'],       unlock: { emoji: '🐴', name: 'Clover' },  accent: '#6fa93f', tint: '#e6f0d6' },
   { name: 'Starry Night',     type: 'seq',     step: 2, startMax: 4,  animals: ['🦉'], unlock: { emoji: '🦉', name: 'Hoot' },    accent: '#5a6bb0', tint: '#e2e4f2' },
   { name: 'Splashy Cove',     type: 'bond',    sumMax: 15, animals: ['🐬'],       unlock: { emoji: '🐬', name: 'Splash' },  accent: '#3f97b3', tint: '#d9eef4' },
+  { name: 'Panda Grove',      type: 'ncompare', lo: 2, hi: 20, wants: ['more'],          animals: ['🐼'], unlock: { emoji: '🐼', name: 'Bamboo' },  accent: '#5b7a8a', tint: '#e7eef1' },
+  { name: 'Giraffe Plains',   type: 'seq',     step: 5, multiples: true, animals: ['🦒'], unlock: { emoji: '🦒', name: 'Stretch' }, accent: '#c79a34', tint: '#f6edcf' },
+  { name: 'Koala Gum',        type: 'ncompare', lo: 5, hi: 50, wants: ['more', 'fewer'], animals: ['🐨'], unlock: { emoji: '🐨', name: 'Gumnut' },  accent: '#6f8379', tint: '#e7ece8' },
+  { name: 'Flamingo Lagoon',  type: 'seq',     step: 10, multiples: true, animals: ['🦩'], unlock: { emoji: '🦩', name: 'Rosie' },   accent: '#d96a92', tint: '#f7e2ea' },
 ]

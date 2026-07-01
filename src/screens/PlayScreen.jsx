@@ -1,7 +1,7 @@
 import { emojiSize } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
 
-export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, hint, muted, onToggleMute, onBack, onAnswer, onAnswerCompare }) {
+export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, answered, hint, muted, onToggleMute, onBack, onAnswer, onAnswerCompare }) {
   const titleRef = useFocusOnMount()
   const q = question || {}
   const a = answered
@@ -53,7 +53,7 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
           >
             <span aria-hidden="true">{muted ? '🔇' : '🔊'}</span>
           </button>
-          <span className="lvl-badge">Lvl {levelNum}</span>
+          <span className="lvl-badge">{practice ? '🎲 Practice' : `Lvl ${levelNum}`}</span>
         </div>
       </header>
 
@@ -150,6 +150,26 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
                 <div className="panel__items" style={{ fontSize: emojiSize(p.count) }}>
                   {Array.from({ length: p.count }).map((_, k) => <span key={k} className="emoji" aria-hidden="true">{p.animal}</span>)}
                 </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {q.kind === 'ncompare' && (
+          <div className="compare">
+            {[
+              { side: 'A', n: q.numA },
+              { side: 'B', n: q.numB },
+            ].map((p) => (
+              <button
+                key={p.side}
+                type="button"
+                className="panel panel--num tap"
+                data-state={cmpState(p.side)}
+                aria-label={`Number ${p.n}`}
+                onClick={() => onAnswerCompare(p.side)}
+              >
+                <span className="num-big">{p.n}</span>
               </button>
             ))}
           </div>

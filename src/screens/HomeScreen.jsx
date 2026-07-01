@@ -1,6 +1,6 @@
 import useFocusOnMount from '../useFocusOnMount'
 
-export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], onPlay, onFriends, onOpenSettings }) {
+export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], onPlay, onFriends, onPractice, onOpenSettings }) {
   const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--home home">
@@ -30,6 +30,9 @@ export default function HomeScreen({ totalStars, friendsCount, collectedAnimals 
         </button>
         <button type="button" className="btn btn--block tap" onClick={onFriends}>
           <span aria-hidden="true">🐾</span> My Friends
+        </button>
+        <button type="button" className="btn btn--block tap" onClick={onPractice}>
+          <span aria-hidden="true">🎲</span> Surprise Round
         </button>
       </div>
     </div>

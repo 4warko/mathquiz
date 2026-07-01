@@ -8,7 +8,7 @@ const CHEERS = {
   1: ['You did it, Holly! 💪', 'Nice work — keep on tumbling! 🤸', 'Every champ practices — well done! 🌟'],
 }
 
-export default function RewardScreen({ cfg, levelNum, stars, justNew, worldComplete, worldAnimals, hasNext, onNext, onContinue }) {
+export default function RewardScreen({ cfg, levelNum, practice, stars, justNew, worldComplete, worldAnimals, hasNext, onNext, onContinue }) {
   const headingRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
   const cheer = useMemo(() => {
@@ -45,7 +45,7 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, worldCompl
       </div>
 
       <div className="reward__card">
-        <p className="reward__label">LEVEL {levelNum} COMPLETE</p>
+        <p className="reward__label">{practice ? 'PRACTICE COMPLETE' : `LEVEL ${levelNum} COMPLETE`}</p>
 
         <div className="stars">
           {[0, 1, 2].map((i) => (
@@ -58,9 +58,13 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, worldCompl
         <div className="reward__animal" aria-hidden="true">{cfg.unlock.emoji}</div>
 
         <h1 className="reward__title" ref={headingRef} tabIndex={-1}>
-          {justNew ? `You found ${cfg.unlock.name}! 🎉` : `${cfg.unlock.name} is so proud!`}
+          {practice ? 'Great practice! 🎲' : justNew ? `You found ${cfg.unlock.name}! 🎉` : `${cfg.unlock.name} is so proud!`}
         </h1>
-        {justNew && <p className="reward__sub">A new friend joined your collection</p>}
+        {practice ? (
+          <p className="reward__sub">You reviewed lots of skills</p>
+        ) : justNew ? (
+          <p className="reward__sub">A new friend joined your collection</p>
+        ) : null}
 
         <div className="reward__cheer">{cheer}</div>
 
@@ -71,7 +75,16 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, worldCompl
         )}
 
         <div className="reward__actions">
-          {hasNext ? (
+          {practice ? (
+            <>
+              <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onNext}>
+                <span aria-hidden="true">🎲</span> Play again
+              </button>
+              <button type="button" className="btn btn--block tap" onClick={onContinue}>
+                <span aria-hidden="true">🏠</span> Back home
+              </button>
+            </>
+          ) : hasNext ? (
             <>
               <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onNext}>
                 Next level <span aria-hidden="true">→</span>

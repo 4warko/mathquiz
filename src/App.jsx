@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { LEVELS, WORLD_SIZE } from './levels'
-import { genQuestions } from './game'
+import { genQuestions, genMixed } from './game'
 import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
@@ -13,6 +13,8 @@ import './App.css'
 
 const STORAGE_KEY = 'holly-math-v1'
 const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
+// Synthetic config for the mixed "Surprise Round" (no real level / animal).
+const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0', unlock: { emoji: '🎲', name: 'Practice' } }
 
 function loadSaved() {
   try {
@@ -38,6 +40,7 @@ function init() {
     earnedStars: 0,
     justNew: false,      // did this run unlock a brand-new animal?
     worldComplete: false, // did this run finish a world (milestone)?
+    practice: false,     // is this a mixed "Surprise Round" (not a real level)?
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
     muted: saved.muted,
@@ -48,6 +51,8 @@ function init() {
 // Compute stars, persist the unlock, and move to the reward screen.
 function finish(state) {
   const stars = state.wrongCount === 0 ? 3 : state.wrongCount <= 2 ? 2 : 1
+  // Practice doesn't unlock animals, touch progress, or change skill.
+  if (state.practice) return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false }
   const prev = state.progress[state.level] || 0
   const isNew = !state.collected.includes(state.level)
   const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
@@ -75,7 +80,17 @@ function reducer(state, action) {
         answered: null,
         wrongCount: 0,
         attempts: 0,
+        practice: false,
         questions: genQuestions(LEVELS[n - 1], state.skill),
+      }
+    }
+    case 'START_PRACTICE': {
+      const pool = LEVELS.filter((_, i) => state.progress[i + 1])
+      const configs = pool.length ? pool : [LEVELS[0]]
+      return {
+        ...state, screen: 'play', practice: true, level: 0, qIndex: 0,
+        answered: null, wrongCount: 0, attempts: 0,
+        questions: genMixed(configs, state.skill),
       }
     }
     case 'ANSWER_CORRECT':
@@ -138,9 +153,9 @@ export default function App() {
     if (!meta) return
     const cfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
     const byScreen = { home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2' }
-    const color = ['intro', 'play', 'reward'].includes(state.screen) ? cfg.tint : byScreen[state.screen] || '#e7dcc4'
+    const color = ['intro', 'play', 'reward'].includes(state.screen) ? (cfg?.tint || PRACTICE_CFG.tint) : byScreen[state.screen] || '#e7dcc4'
     meta.setAttribute('content', color)
-  }, [state.screen, state.level, state.pendingLevel])
+  }, [state.screen, state.level, state.pendingLevel, state.practice])
 
   // Little fanfare when the reward screen appears.
   useEffect(() => {
@@ -152,6 +167,7 @@ export default function App() {
   const navigate = (screen) => { clearTimer(); dispatch({ type: 'NAVIGATE', screen }) }
   const openIntro = (n) => { if (playable(n)) dispatch({ type: 'OPEN_INTRO', n }) }
   const startLevel = () => { clearTimer(); dispatch({ type: 'START_LEVEL' }) }
+  const startPractice = () => { clearTimer(); dispatch({ type: 'START_PRACTICE' }) }
 
   // Sound + haptics; sound respects the mute toggle, haptics are always subtle.
   const feedback = (correct) => {
@@ -191,6 +207,7 @@ export default function App() {
   const worldAnimals = state.worldComplete
     ? LEVELS.slice(Math.max(0, state.level - WORLD_SIZE), state.level).map((l) => l.unlock.emoji)
     : []
+  const screenCfg = state.practice ? PRACTICE_CFG : activeCfg
 
   return (
     <div className="app-outer">
@@ -202,6 +219,7 @@ export default function App() {
             collectedAnimals={collectedAnimals}
             onPlay={() => navigate('map')}
             onFriends={() => navigate('collection')}
+            onPractice={startPractice}
             onOpenSettings={() => setSettingsOpen(true)}
           />
         )}
@@ -231,15 +249,16 @@ export default function App() {
 
         {state.screen === 'play' && (
           <PlayScreen
-            cfg={activeCfg}
+            cfg={screenCfg}
             levelNum={state.level}
+            practice={state.practice}
             question={state.questions[state.qIndex]}
             qIndex={state.qIndex}
             answered={state.answered}
             hint={state.attempts >= HINT_AFTER}
             muted={state.muted}
             onToggleMute={() => dispatch({ type: 'TOGGLE_MUTE' })}
-            onBack={() => navigate('map')}
+            onBack={() => navigate(state.practice ? 'home' : 'map')}
             onAnswer={answer}
             onAnswerCompare={answerCompare}
           />
@@ -247,15 +266,16 @@ export default function App() {
 
         {state.screen === 'reward' && (
           <RewardScreen
-            cfg={activeCfg}
+            cfg={screenCfg}
             levelNum={state.level}
+            practice={state.practice}
             stars={state.earnedStars}
             justNew={state.justNew}
             worldComplete={state.worldComplete}
             worldAnimals={worldAnimals}
-            hasNext={state.level < LEVELS.length}
-            onNext={() => openIntro(state.level + 1)}
-            onContinue={() => navigate('map')}
+            hasNext={!state.practice && state.level < LEVELS.length}
+            onNext={state.practice ? startPractice : () => openIntro(state.level + 1)}
+            onContinue={() => navigate(state.practice ? 'home' : 'map')}
           />
         )}
 

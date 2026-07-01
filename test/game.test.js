@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { rand, shuffle, genQuestions, howToPlay, emojiSize } from '../src/game.js'
+import { rand, shuffle, genQuestions, genMixed, howToPlay, emojiSize } from '../src/game.js'
 import { LEVELS } from '../src/levels.js'
 
 test('rand stays within the inclusive range', () => {
@@ -59,6 +59,14 @@ function validate(q) {
       assert.equal(q.answerSide, expected, 'answerSide must match want')
       break
     }
+    case 'ncompare': {
+      assert.ok(['A', 'B'].includes(q.answerSide))
+      assert.notEqual(q.numA, q.numB, 'ncompare numbers must differ')
+      const more = q.numA > q.numB ? 'A' : 'B'
+      const expected = q.want === 'more' ? more : more === 'A' ? 'B' : 'A'
+      assert.equal(q.answerSide, expected, 'answerSide must match want')
+      break
+    }
     default:
       assert.fail(`unknown question kind: ${q.kind}`)
   }
@@ -72,6 +80,16 @@ test('every level generates 5 valid questions across the skill range', () => {
         assert.equal(qs.length, 5, `${cfg.name}: expected 5 questions`)
         for (const q of qs) validate(q)
       }
+    }
+  }
+})
+
+test('genMixed produces 5 valid questions drawn from a pool', () => {
+  for (let skill = -2; skill <= 3; skill++) {
+    for (let iter = 0; iter < 100; iter++) {
+      const qs = genMixed(LEVELS, skill)
+      assert.equal(qs.length, 5)
+      for (const q of qs) validate(q)
     }
   }
 })

@@ -23,6 +23,14 @@ const makeChoices = (answer) => {
   return shuffle([...set])
 }
 
+// Choices for a sequence: the answer plus one step on either side (e.g. 50/60/70).
+const seqChoices = (answer, step) => {
+  const set = new Set([answer, answer + step, Math.max(0, answer - step)])
+  let k = 2
+  while (set.size < 3) { set.add(answer + step * k); k++ }
+  return shuffle([...set])
+}
+
 // Generate a single question for a given level config.
 const genOne = (cfg) => {
   if (cfg.type === 'add') {
@@ -47,10 +55,26 @@ const genOne = (cfg) => {
 
   if (cfg.type === 'seq') {
     const step = cfg.step || 1
-    const start = rand(1, cfg.startMax || 5)
+    const start = cfg.multiples ? step * rand(1, 3) : rand(1, cfg.startMax || 5)
     const seq = [start, start + step, start + 2 * step]
     const answer = start + 3 * step
-    return { kind: 'seq', seq, answer, choices: makeChoices(answer), prompt: 'What comes next?' }
+    const prompt = step >= 3 ? `Count by ${step}s — what comes next?` : 'What comes next?'
+    return { kind: 'seq', seq, answer, choices: seqChoices(answer, step), prompt }
+  }
+
+  if (cfg.type === 'ncompare') {
+    const { lo, hi } = cfg
+    let na = rand(lo, hi)
+    let nb = rand(lo, hi)
+    let guard = 0
+    while (nb === na && guard++ < 25) nb = rand(lo, hi)
+    if (nb === na) nb = na > lo ? na - 1 : na + 1
+    const want = cfg.wants[rand(0, cfg.wants.length - 1)]
+    const answerSide = want === 'more' ? (na > nb ? 'A' : 'B') : (na < nb ? 'A' : 'B')
+    return {
+      kind: 'ncompare', numA: na, numB: nb, want, answerSide,
+      prompt: want === 'more' ? 'Tap the BIGGER number' : 'Tap the SMALLER number',
+    }
   }
 
   if (cfg.type === 'bond') {
@@ -93,6 +117,7 @@ const withSkill = (cfg, skill) => {
     case 'sub':
       return { ...cfg, minMax: bump(cfg.minMax) }
     case 'compare':
+    case 'ncompare':
       return { ...cfg, hi: bump(cfg.hi) }
     default: // sequences stay fixed so the step stays learnable
       return cfg
@@ -104,12 +129,17 @@ export const genQuestions = (cfg, skill = 0) => {
   return Array.from({ length: 5 }, () => genOne(adjusted))
 }
 
+// Mixed practice: 5 questions, each drawn from a random config in the pool.
+export const genMixed = (configs, skill = 0) =>
+  Array.from({ length: 5 }, () => genOne(withSkill(configs[rand(0, configs.length - 1)], skill)))
+
 // A short "what you'll do" line for the level-intro screen.
 export const howToPlay = (cfg) => {
   if (cfg.type === 'add') return 'Count all the animals and tap the total!'
   if (cfg.type === 'sub') return 'Some animals hop away — how many are left?'
   if (cfg.type === 'seq') return 'Look at the numbers — what comes next?'
   if (cfg.type === 'bond') return 'How many more do you need to reach the number?'
+  if (cfg.type === 'ncompare') return 'Which number is bigger (or smaller)? Tap it!'
   return 'Tap the group with more (or fewer)!'
 }
 
