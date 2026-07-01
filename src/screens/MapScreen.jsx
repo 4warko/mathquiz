@@ -12,7 +12,7 @@ const CENTER = 190 // distance from the top to park the current node on scroll
 // Horizontal position (percent) for each node, cycling down the trail.
 const XS = [26, 50, 74, 50]
 
-export default function MapScreen({ levels, progress, playable, totalStars, friendsCount, onStart, onNavigate, onOpenSettings }) {
+export default function MapScreen({ levels, progress, playable, totalStars, friendsCount, name = 'Holly', onStart, onNavigate, onOpenSettings }) {
   const scrollRef = useRef(null)
   const titleRef = useFocusOnMount()
 
@@ -39,7 +39,7 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
           <span aria-hidden="true">⚙️</span>
         </button>
         <div className="topbar__grow">
-          <h1 className="topbar__title" ref={titleRef} tabIndex={-1}>Holly&apos;s Animal Math</h1>
+          <h1 className="topbar__title" ref={titleRef} tabIndex={-1}>{`${name}'s Animal Math`}</h1>
           <div className="topbar__sub">Tap a spot to play!</div>
         </div>
         <div className="topbar__actions">

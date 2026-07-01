@@ -3,6 +3,7 @@ import { LEVELS, WORLD_SIZE } from './levels'
 import { genQuestions, genMixed } from './game'
 import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
 import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
+import WelcomeScreen from './screens/WelcomeScreen'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
 import IntroScreen from './screens/IntroScreen'
@@ -24,17 +25,19 @@ function loadSaved() {
     if (s) return {
       progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted, skill: s.skill || 0,
       stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) }, badges: s.badges || [],
+      name: s.name || '', avatar: s.avatar || '🐰',
     }
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], muted: false, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [] }
+  return { progress: {}, collected: [], muted: false, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], name: '', avatar: '🐰' }
 }
 
 function init() {
   const saved = loadSaved()
   return {
-    screen: 'home',      // home | map | intro | play | reward | collection
+    // First launch (no name yet) starts on the welcome/profile step.
+    screen: saved.name ? 'home' : 'welcome', // welcome | home | map | intro | play | reward | collection | awards
     level: 1,            // 1-based level number being played
     pendingLevel: 1,     // level chosen on the intro step
     qIndex: 0,           // 0..4 within the current level
@@ -53,6 +56,8 @@ function init() {
     stats: saved.stats,  // { correct, perfect, practiceRounds }
     badges: saved.badges, // unlocked achievement ids
     newBadges: [],       // ids unlocked by the run just finished (for the reward screen)
+    name: saved.name,    // the player's name (drives titles + cheers)
+    avatar: saved.avatar, // the player's chosen buddy (home hero)
   }
 }
 
@@ -88,6 +93,8 @@ function reducer(state, action) {
   switch (action.type) {
     case 'NAVIGATE':
       return { ...state, screen: action.screen, answered: null }
+    case 'SET_PROFILE':
+      return { ...state, name: action.name, avatar: action.avatar, screen: 'home' }
     case 'OPEN_INTRO':
       return { ...state, screen: 'intro', pendingLevel: action.n }
     case 'START_LEVEL': {
@@ -160,19 +167,19 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, skill: state.skill, stats: state.stats, badges: state.badges }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, skill: state.skill, stats: state.stats, badges: state.badges, name: state.name, avatar: state.avatar }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.muted, state.skill, state.stats, state.badges])
+  }, [state.progress, state.collected, state.muted, state.skill, state.stats, state.badges, state.name, state.avatar])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]')
     if (!meta) return
     const cfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
-    const byScreen = { home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2', awards: '#f4ecd6' }
+    const byScreen = { welcome: '#f6ece0', home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2', awards: '#f4ecd6' }
     const color = ['intro', 'play', 'reward'].includes(state.screen) ? (cfg?.tint || PRACTICE_CFG.tint) : byScreen[state.screen] || '#e7dcc4'
     meta.setAttribute('content', color)
   }, [state.screen, state.level, state.pendingLevel, state.practice])
@@ -230,15 +237,26 @@ export default function App() {
   const screenCfg = state.practice ? PRACTICE_CFG : activeCfg
   const achCtx = achievementCtx({ progress: state.progress, collected: state.collected, stats: state.stats })
   const newBadgeObjs = state.newBadges.map((id) => ACHIEVEMENTS.find((a) => a.id === id)).filter(Boolean)
+  const displayName = state.name || 'Holly'
 
   return (
     <div className="app-outer">
       <div className="app-frame">
+        {state.screen === 'welcome' && (
+          <WelcomeScreen
+            initialName={state.name}
+            initialAvatar={state.avatar}
+            onDone={(name, avatar) => dispatch({ type: 'SET_PROFILE', name, avatar })}
+          />
+        )}
+
         {state.screen === 'home' && (
           <HomeScreen
             totalStars={totalStars}
             friendsCount={friendsCount}
             collectedAnimals={collectedAnimals}
+            name={displayName}
+            avatar={state.avatar}
             onPlay={() => navigate('map')}
             onFriends={() => navigate('collection')}
             onPractice={startPractice}
@@ -253,6 +271,7 @@ export default function App() {
             playable={playable}
             totalStars={totalStars}
             friendsCount={friendsCount}
+            name={displayName}
             onStart={openIntro}
             onNavigate={navigate}
             onOpenSettings={() => setSettingsOpen(true)}
@@ -291,6 +310,7 @@ export default function App() {
             cfg={screenCfg}
             levelNum={state.level}
             practice={state.practice}
+            name={displayName}
             stars={state.earnedStars}
             justNew={state.justNew}
             worldComplete={state.worldComplete}
@@ -328,6 +348,7 @@ export default function App() {
           muted={state.muted}
           onToggleMute={() => dispatch({ type: 'TOGGLE_MUTE' })}
           onReset={() => dispatch({ type: 'RESET_PROGRESS' })}
+          onChangeName={() => { setSettingsOpen(false); navigate('welcome') }}
           onClose={() => setSettingsOpen(false)}
         />
       )}

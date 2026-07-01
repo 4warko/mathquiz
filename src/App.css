@@ -192,6 +192,7 @@ button.pill { min-height: var(--tap); }
 .btn--primary { background: var(--primary); color: var(--on-primary); }
 .btn--block { width: 100%; }
 .btn--lg { padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); box-shadow: var(--shadow-lg); }
+.btn:disabled { opacity: 0.5; box-shadow: var(--shadow-sm); cursor: default; }
 
 /* ---------- Bottom navigation (thumb zone) ---------- */
 .bottom-nav {
@@ -661,6 +662,58 @@ button.pill { min-height: var(--tap); }
 .intro__animal { font-size: var(--fs-hero); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
 .intro__how { font-size: var(--fs-md); color: var(--ink); text-wrap: balance; }
 .intro__actions { display: flex; flex-direction: column; gap: var(--s-2); width: 100%; margin-top: var(--s-2); }
+
+/* ---------- Welcome / profile (first run + change name) ---------- */
+.welcome {
+  align-items: center;
+  justify-content: safe center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-6);
+}
+.welcome__card {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  max-width: 340px;
+  padding: var(--s-8) var(--s-6);
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-wobble-lg);
+  box-shadow: var(--shadow-lg);
+}
+.welcome__hero { font-size: var(--fs-hero); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
+.welcome__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); color: var(--ink); }
+.welcome__sub { font-size: var(--fs-sm); color: var(--ink-soft); text-align: center; }
+.welcome__input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-4);
+  font-family: var(--font-body);
+  font-size: var(--fs-md); /* >= 16px avoids iOS focus zoom */
+  color: var(--ink);
+  text-align: center;
+  background: var(--surface-2);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-md);
+}
+.welcome__avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
+.welcome__avatar {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+.welcome__avatar.is-picked { background: #fff2c9; transform: scale(1.08); }
 
 /* Grown-up settings entry on the home screen (top-right corner). */
 .home__settings {

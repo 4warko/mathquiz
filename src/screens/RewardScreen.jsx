@@ -2,20 +2,21 @@ import { useMemo } from 'react'
 import { rand } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
 
-const CHEERS = {
-  3: ['Holly, that was a PERFECT 10! 🤸', 'Gold medal, Holly! Flawless landing! 🥇', 'Wow — you stuck every landing! 🤸‍♀️'],
-  2: ['Great tumbling, Holly! 🌟', 'So close to a perfect 10 — bravo! 🌟', 'Super work, superstar! ✨'],
-  1: ['You did it, Holly! 💪', 'Nice work — keep on tumbling! 🤸', 'Every champ practices — well done! 🌟'],
-}
+const cheersFor = (name) => ({
+  3: [`${name}, that was a PERFECT 10! 🤸`, `Gold medal, ${name}! Flawless landing! 🥇`, `Wow ${name} — you stuck every landing! 🤸‍♀️`],
+  2: [`Great tumbling, ${name}! 🌟`, 'So close to a perfect 10 — bravo! 🌟', 'Super work, superstar! ✨'],
+  1: [`You did it, ${name}! 💪`, 'Nice work — keep it up! 🤸', 'Every champ practices — well done! 🌟'],
+})
 
-export default function RewardScreen({ cfg, levelNum, practice, stars, justNew, worldComplete, worldAnimals, newBadges = [], hasNext, onNext, onContinue }) {
+export default function RewardScreen({ cfg, levelNum, practice, name = 'Holly', stars, justNew, worldComplete, worldAnimals, newBadges = [], hasNext, onNext, onContinue }) {
   const headingRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
   const cheer = useMemo(() => {
-    const arr = CHEERS[stars] || CHEERS[1]
+    const map = cheersFor(name)
+    const arr = map[stars] || map[1]
     return arr[rand(0, arr.length - 1)]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [levelNum, stars])
+  }, [levelNum, stars, name])
 
   const confetti = useMemo(
     () =>

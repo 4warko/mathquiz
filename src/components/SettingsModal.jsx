@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // Accessible modal dialog: focus is trapped while open and restored to the
 // trigger on close (WAI-ARIA dialog pattern + WCAG 2.4.3).
-export default function SettingsModal({ muted, onToggleMute, onReset, onClose }) {
+export default function SettingsModal({ muted, onToggleMute, onReset, onChangeName, onClose }) {
   const dialogRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
 
@@ -58,6 +58,11 @@ export default function SettingsModal({ muted, onToggleMute, onReset, onClose })
           <span className={`toggle${muted ? '' : ' toggle--on'}`} aria-hidden="true">
             <span className="toggle__knob" />
           </span>
+        </button>
+
+        <button type="button" className="setting-row tap" onClick={onChangeName}>
+          <span className="setting-row__label"><span aria-hidden="true">✏️</span> Change name</span>
+          <span className="setting-row__hint" aria-hidden="true">›</span>
         </button>
 
         {confirming ? (
