@@ -8,8 +8,6 @@ const CHEERS = {
   1: ['You did it, Holly! 💪', 'Nice work — keep on tumbling! 🤸', 'Every champ practices — well done! 🌟'],
 }
 
-const CONFETTI_COLORS = ['#ef8354', '#7fb069', '#5aa9d6', '#f2c14e', '#d0587e', '#9b6bce']
-
 export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue }) {
   const labelRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
@@ -25,7 +23,7 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
         left: `${rand(0, 100)}%`,
         width: rand(8, 13),
         height: rand(12, 18),
-        background: CONFETTI_COLORS[rand(0, CONFETTI_COLORS.length - 1)],
+        color: rand(0, 5), // maps to .confetti--0..5 (see tokens --joy-*)
         borderRadius: rand(0, 1) ? '2px' : '50%',
         duration: rand(24, 40) / 10,
         delay: rand(0, 18) / 10,
@@ -40,8 +38,8 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
         {confetti.map((c, i) => (
           <div
             key={i}
-            className="confetti"
-            style={{ left: c.left, width: c.width, height: c.height, background: c.background, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite` }}
+            className={`confetti confetti--${c.color}`}
+            style={{ left: c.left, width: c.width, height: c.height, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite` }}
           />
         ))}
       </div>

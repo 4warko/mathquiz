@@ -1,9 +1,13 @@
 import useFocusOnMount from '../useFocusOnMount'
 
-export default function HomeScreen({ totalStars, friendsCount, onPlay, onFriends }) {
+export default function HomeScreen({ totalStars, friendsCount, onPlay, onFriends, onOpenSettings }) {
   const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--home home">
+      <button type="button" className="home__settings icon-btn tap" aria-label="Grown-up settings" onClick={onOpenSettings}>
+        <span aria-hidden="true">⚙️</span>
+      </button>
+
       <div className="home__top">
         <div className="home__hero" aria-hidden="true">🐰</div>
         <h1 className="home__title" ref={titleRef} tabIndex={-1}>Holly&apos;s Animal Math</h1>

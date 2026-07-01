@@ -25,6 +25,10 @@
   --star: #f2c14e;
   --correct: #b6e29a;
   --wrong: #f2ab9d;
+  --eq-accent: #c0553f; /* the +, −, ? marks on the play card */
+  /* Confetti / celebration palette (decorative — bright on purpose). */
+  --joy-1: #ef8354; --joy-2: #7fb069; --joy-3: #5aa9d6;
+  --joy-4: #f2c14e; --joy-5: #d0587e; --joy-6: #9b6bce;
   /* Per-world accent + soft tint; overridden inline per level. */
   --accent: var(--primary);
   --tint: var(--surface);

@@ -1,20 +1,27 @@
 import { emojiSize } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
 
-export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, onBack, onAnswer, onAnswerCompare }) {
+export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, hint, onBack, onAnswer, onAnswerCompare }) {
   const titleRef = useFocusOnMount()
   const q = question || {}
   const a = answered
 
-  // Visual state for a number choice button.
+  // Visual state for a number choice button. After a couple of misses the
+  // correct answer pulses ("hint") and the distractors dim to guide the child.
   const numState = (value) => {
-    if (!a) return 'idle'
+    if (!a) {
+      if (hint) return value === q.answer ? 'hint' : 'dim'
+      return 'idle'
+    }
     if (a.correct) return value === q.answer ? 'correct' : 'dim'
     return value === a.value ? 'wrong' : 'idle'
   }
-  // Visual state for a compare panel.
+  // Visual state for a compare panel (same hint scaffolding).
   const cmpState = (side) => {
-    if (!a) return 'idle'
+    if (!a) {
+      if (hint) return side === q.answerSide ? 'hint' : 'dim'
+      return 'idle'
+    }
     if (a.correct) return side === q.answerSide ? 'correct' : 'dim'
     return side === a.side ? 'wrong' : 'idle'
   }
@@ -47,6 +54,8 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
         )}
 
         <p className="prompt">{q.prompt}</p>
+
+        {hint && !a && <p className="hint-tip" role="status">Tap the glowing one! ✨</p>}
 
         {isNumberQ && (
           <div className="qcard">

@@ -1,27 +1,30 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { LEVELS } from './levels'
 import { genQuestions } from './game'
+import { playCorrect, playWrong, playFanfare } from './sound'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
 import IntroScreen from './screens/IntroScreen'
 import PlayScreen from './screens/PlayScreen'
 import RewardScreen from './screens/RewardScreen'
 import CollectionScreen from './screens/CollectionScreen'
+import SettingsModal from './components/SettingsModal'
 import './App.css'
 
 const STORAGE_KEY = 'holly-math-v1'
+const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
 
 function loadSaved() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (s) return { progress: s.progress || {}, collected: s.collected || [] }
+    if (s) return { progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted }
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [] }
+  return { progress: {}, collected: [], muted: false }
 }
 
-function initialState() {
+function init() {
   const saved = loadSaved()
   return {
     screen: 'home',      // home | map | intro | play | reward | collection
@@ -30,28 +33,88 @@ function initialState() {
     qIndex: 0,           // 0..4 within the current level
     questions: [],
     answered: null,      // { correct, value|side }
-    wrongCount: 0,
+    wrongCount: 0,       // misses across the whole level (drives star score)
+    attempts: 0,         // misses on the CURRENT question (drives the hint)
     earnedStars: 0,
     justNew: false,      // did this run unlock a brand-new animal?
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
+    muted: saved.muted,
+  }
+}
+
+// Compute stars, persist the unlock, and move to the reward screen.
+function finish(state) {
+  const stars = state.wrongCount === 0 ? 3 : state.wrongCount <= 2 ? 2 : 1
+  const prev = state.progress[state.level] || 0
+  const isNew = !state.collected.includes(state.level)
+  const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
+  const collected = isNew ? [...state.collected, state.level] : state.collected
+  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, progress, collected }
+}
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'NAVIGATE':
+      return { ...state, screen: action.screen, answered: null }
+    case 'OPEN_INTRO':
+      return { ...state, screen: 'intro', pendingLevel: action.n }
+    case 'START_LEVEL': {
+      const n = state.pendingLevel
+      return {
+        ...state,
+        screen: 'play',
+        level: n,
+        qIndex: 0,
+        answered: null,
+        wrongCount: 0,
+        attempts: 0,
+        questions: genQuestions(LEVELS[n - 1]),
+      }
+    }
+    case 'ANSWER_CORRECT':
+      return { ...state, answered: { correct: true, value: action.value, side: action.side } }
+    case 'ANSWER_WRONG':
+      return {
+        ...state,
+        answered: { correct: false, value: action.value, side: action.side },
+        wrongCount: state.wrongCount + 1,
+        attempts: state.attempts + 1,
+      }
+    case 'CLEAR_ANSWER':
+      return { ...state, answered: null }
+    case 'ADVANCE':
+      if (state.qIndex < 4) return { ...state, qIndex: state.qIndex + 1, answered: null, attempts: 0 }
+      return finish(state)
+    case 'TOGGLE_MUTE':
+      return { ...state, muted: !state.muted }
+    case 'RESET_PROGRESS':
+      return { ...state, progress: {}, collected: [] }
+    default:
+      return state
   }
 }
 
 export default function App() {
-  const [state, setStateRaw] = useState(initialState)
+  const [state, dispatch] = useReducer(reducer, undefined, init)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
-  // Keep a live ref so deferred callbacks (setTimeout) read fresh state.
-  const stateRef = useRef(state)
-  stateRef.current = state
+  // dispatch is stable, so deferred callbacks read fresh state without a ref hack.
   const timerRef = useRef(null)
-
-  // Merge-style setState, mirroring the original class component.
-  const setState = (patch) =>
-    setStateRaw((prev) => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
-
-  const clearTimer = () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  const clearTimer = () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null } }
   useEffect(() => clearTimer, [])
+
+  // Persist progress, collection, and the sound preference whenever they change.
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted }),
+      )
+    } catch {
+      /* ignore */
+    }
+  }, [state.progress, state.collected, state.muted])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
@@ -63,66 +126,46 @@ export default function App() {
     meta.setAttribute('content', color)
   }, [state.screen, state.level, state.pendingLevel])
 
+  // Little fanfare when the reward screen appears.
+  useEffect(() => {
+    if (state.screen === 'reward' && !state.muted) playFanfare()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.screen])
+
   const playable = (n) => n === 1 || !!state.progress[n - 1]
+  const navigate = (screen) => { clearTimer(); dispatch({ type: 'NAVIGATE', screen }) }
+  const openIntro = (n) => { if (playable(n)) dispatch({ type: 'OPEN_INTRO', n }) }
+  const startLevel = () => { clearTimer(); dispatch({ type: 'START_LEVEL' }) }
 
-  const navigate = (screen) => { clearTimer(); setState({ screen }) }
-
-  const openIntro = (n) => {
-    if (!(n === 1 || stateRef.current.progress[n - 1])) return
-    setState({ screen: 'intro', pendingLevel: n })
+  // Sound + haptics; sound respects the mute toggle, haptics are always subtle.
+  const feedback = (correct) => {
+    if (!state.muted) (correct ? playCorrect : playWrong)()
+    if (navigator.vibrate) navigator.vibrate(correct ? 28 : [18, 36, 18])
   }
 
-  const startLevel = () => {
-    const n = stateRef.current.pendingLevel
+  const resolve = (isCorrect, payload) => {
     clearTimer()
-    setState({ screen: 'play', level: n, qIndex: 0, answered: null, wrongCount: 0, questions: genQuestions(LEVELS[n - 1]) })
-  }
-
-  const finishLevel = () => {
-    const s = stateRef.current
-    const stars = s.wrongCount === 0 ? 3 : s.wrongCount <= 2 ? 2 : 1
-    const prev = s.progress[s.level] || 0
-    const isNew = !s.collected.includes(s.level)
-    const progress = { ...s.progress, [s.level]: Math.max(prev, stars) }
-    const collected = isNew ? [...s.collected, s.level] : s.collected
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ progress, collected }))
-    } catch {
-      /* ignore */
+    if (isCorrect) {
+      dispatch({ type: 'ANSWER_CORRECT', ...payload })
+      feedback(true)
+      timerRef.current = setTimeout(() => dispatch({ type: 'ADVANCE' }), 1150)
+    } else {
+      dispatch({ type: 'ANSWER_WRONG', ...payload })
+      feedback(false)
+      timerRef.current = setTimeout(() => dispatch({ type: 'CLEAR_ANSWER' }), 800)
     }
-    setState({ screen: 'reward', earnedStars: stars, justNew: isNew, progress, collected })
-  }
-
-  const advance = () => {
-    const s = stateRef.current
-    if (s.qIndex < 4) setState({ qIndex: s.qIndex + 1, answered: null })
-    else finishLevel()
   }
 
   const answer = (value) => {
-    const s = stateRef.current
-    if (s.answered && s.answered.correct) return
-    const q = s.questions[s.qIndex]
-    if (value === q.answer) {
-      setState({ answered: { value, correct: true } })
-      timerRef.current = setTimeout(advance, 1150)
-    } else {
-      setState((st) => ({ answered: { value, correct: false }, wrongCount: st.wrongCount + 1 }))
-      timerRef.current = setTimeout(() => setState({ answered: null }), 800)
-    }
+    if (state.answered?.correct) return
+    const q = state.questions[state.qIndex]
+    resolve(value === q.answer, { value })
   }
 
   const answerCompare = (side) => {
-    const s = stateRef.current
-    if (s.answered && s.answered.correct) return
-    const q = s.questions[s.qIndex]
-    if (side === q.answerSide) {
-      setState({ answered: { side, correct: true } })
-      timerRef.current = setTimeout(advance, 1150)
-    } else {
-      setState((st) => ({ answered: { side, correct: false }, wrongCount: st.wrongCount + 1 }))
-      timerRef.current = setTimeout(() => setState({ answered: null }), 800)
-    }
+    if (state.answered?.correct) return
+    const q = state.questions[state.qIndex]
+    resolve(side === q.answerSide, { side })
   }
 
   const totalStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
@@ -138,6 +181,7 @@ export default function App() {
             friendsCount={friendsCount}
             onPlay={() => navigate('map')}
             onFriends={() => navigate('collection')}
+            onOpenSettings={() => setSettingsOpen(true)}
           />
         )}
 
@@ -170,6 +214,7 @@ export default function App() {
             question={state.questions[state.qIndex]}
             qIndex={state.qIndex}
             answered={state.answered}
+            hint={state.attempts >= HINT_AFTER}
             onBack={() => navigate('map')}
             onAnswer={answer}
             onAnswerCompare={answerCompare}
@@ -195,6 +240,15 @@ export default function App() {
           />
         )}
       </div>
+
+      {settingsOpen && (
+        <SettingsModal
+          muted={state.muted}
+          onToggleMute={() => dispatch({ type: 'TOGGLE_MUTE' })}
+          onReset={() => dispatch({ type: 'RESET_PROGRESS' })}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
   )
 }

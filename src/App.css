@@ -300,6 +300,15 @@ button.pill { min-height: var(--tap); }
   text-wrap: balance;
 }
 
+/* Gentle nudge shown after a couple of misses (see hint scaffolding). */
+.hint-tip {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  color: var(--success);
+  animation: floaty 1.6s ease-in-out infinite;
+}
+
 .qcard {
   width: 100%;
   display: flex;
@@ -314,7 +323,7 @@ button.pill { min-height: var(--tap); }
 }
 .eq-row { display: flex; align-items: center; justify-content: center; gap: var(--s-2); flex-wrap: wrap; }
 .eq-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 1px; max-width: 150px; }
-.eq-plus { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); color: #c0553f; }
+.eq-plus { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); color: var(--eq-accent); }
 .sub-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; max-width: 280px; }
 .emoji { line-height: 1.05; }
 .emoji.is-gone { opacity: 0.28; filter: grayscale(1); }
@@ -325,7 +334,7 @@ button.pill { min-height: var(--tap); }
   color: var(--ink);
   letter-spacing: 1px;
 }
-.eq-q { color: #c0553f; }
+.eq-q { color: var(--eq-accent); }
 
 .choices { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: center; width: 100%; }
 .choice {
@@ -346,6 +355,7 @@ button.pill { min-height: var(--tap); }
 .choice[data-state='correct'] { background: var(--correct); transform: scale(1.06); }
 .choice[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
 .choice[data-state='dim'] { opacity: 0.4; }
+.choice[data-state='hint'] { border-color: var(--success); animation: hintPulse 1.1s ease-in-out infinite; }
 
 .compare { display: flex; gap: var(--s-3); width: 100%; }
 .panel {
@@ -359,6 +369,7 @@ button.pill { min-height: var(--tap); }
 .panel[data-state='correct'] { background: var(--correct); transform: scale(1.03); }
 .panel[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
 .panel[data-state='dim'] { opacity: 0.4; }
+.panel[data-state='hint'] { border-color: var(--success); animation: hintPulse 1.1s ease-in-out infinite; }
 .panel__items {
   display: flex;
   flex-wrap: wrap;
@@ -389,6 +400,7 @@ button.pill { min-height: var(--tap); }
 .reward__card {
   position: relative;
   z-index: 2;
+  margin: auto;  /* scroll-safe vertical centering */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -415,10 +427,15 @@ button.pill { min-height: var(--tap); }
 .reward__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-xl); color: var(--ink); }
 .reward__sub { font-size: var(--fs-sm); color: var(--ink-soft); }
 .reward__cheer { font-size: var(--fs-md); color: var(--ink); margin-top: var(--s-1); text-wrap: balance; }
-.reward__card { margin: auto; }  /* scroll-safe vertical centering */
 /* Confetti is clipped to its own layer so it never adds scroll height. */
 .confetti-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
 .confetti { position: absolute; top: -6%; }
+.confetti--0 { background: var(--joy-1); }
+.confetti--1 { background: var(--joy-2); }
+.confetti--2 { background: var(--joy-3); }
+.confetti--3 { background: var(--joy-4); }
+.confetti--4 { background: var(--joy-5); }
+.confetti--5 { background: var(--joy-6); }
 
 /* ---------- Collection ---------- */
 .coll-grid {
@@ -492,6 +509,94 @@ button.pill { min-height: var(--tap); }
 .intro__how { font-size: var(--fs-md); color: var(--ink); text-wrap: balance; }
 .intro__actions { display: flex; flex-direction: column; gap: var(--s-2); width: 100%; margin-top: var(--s-2); }
 
+/* Grown-up settings entry on the home screen (top-right corner). */
+.home__settings {
+  position: absolute;
+  top: max(var(--s-4), env(safe-area-inset-top));
+  right: var(--s-4);
+  z-index: 5;
+}
+
+/* ---------- Settings dialog ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-6);
+  background: rgba(65, 51, 42, 0.5);
+  backdrop-filter: blur(3px);
+  animation: fadeUp 0.2s ease;
+}
+.modal {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-6);
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-wobble-lg);
+  box-shadow: var(--shadow-lg);
+}
+.modal__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-xl);
+  color: var(--ink);
+  text-align: center;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-4);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-md);
+  box-shadow: var(--shadow-sm);
+}
+.setting-row__label { display: inline-flex; align-items: center; gap: var(--s-2); }
+.setting-row__hint { color: var(--ink-faint); font-size: var(--fs-lg); }
+.setting-row--reset { background: var(--surface-2); }
+.toggle {
+  flex: 0 0 auto;
+  position: relative;
+  width: 52px;
+  height: 30px;
+  border: 3px solid var(--ink);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  transition: background var(--t) ease;
+}
+.toggle--on { background: var(--success); }
+.toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform var(--t) ease;
+}
+.toggle--on .toggle__knob { transform: translateX(22px); }
+.btn--danger { background: var(--wrong); color: var(--ink); }
+.setting-confirm { display: flex; flex-direction: column; gap: var(--s-3); }
+.setting-confirm__q { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); color: var(--ink); text-align: center; }
+.setting-confirm__actions { display: flex; gap: var(--s-2); }
+.setting-confirm__actions .btn { font-size: var(--fs-md); padding: var(--s-3) var(--s-4); }
+
 /* ============================================================
    Desktop / larger viewports — present the frame as a device.
    ============================================================ */
@@ -542,4 +647,8 @@ button.pill { min-height: var(--tap); }
 @keyframes floaty {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+@keyframes hintPulse {
+  0%, 100% { transform: scale(1); box-shadow: var(--shadow-md); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(79, 138, 63, 0.35), var(--shadow-md); }
 }
