@@ -52,6 +52,14 @@ button {
   outline: none;
 }
 
+/* Headings receive programmatic focus for screen-reader context on each screen
+   (see useFocusOnMount). They're tabIndex=-1 (never reached by Tab), so the
+   focus ring would just be visual noise for sighted users — suppress it. */
+[tabindex='-1']:focus,
+[tabindex='-1']:focus-visible {
+  outline: none;
+}
+
 /* Screen-reader-only: visible to assistive tech, invisible on screen. */
 .sr-only {
   position: absolute;

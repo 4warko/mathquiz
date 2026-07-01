@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
-import { LEVELS } from './levels'
+import { LEVELS, WORLD_SIZE } from './levels'
 import { genQuestions } from './game'
 import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
 import HomeScreen from './screens/HomeScreen'
@@ -17,11 +17,11 @@ const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
 function loadSaved() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (s) return { progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted }
+    if (s) return { progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted, skill: s.skill || 0 }
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], muted: false }
+  return { progress: {}, collected: [], muted: false, skill: 0 }
 }
 
 function init() {
@@ -37,9 +37,11 @@ function init() {
     attempts: 0,         // misses on the CURRENT question (drives the hint)
     earnedStars: 0,
     justNew: false,      // did this run unlock a brand-new animal?
+    worldComplete: false, // did this run finish a world (milestone)?
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
     muted: saved.muted,
+    skill: saved.skill,  // adaptive-difficulty offset, [-2, 3]
   }
 }
 
@@ -50,7 +52,11 @@ function finish(state) {
   const isNew = !state.collected.includes(state.level)
   const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
   const collected = isNew ? [...state.collected, state.level] : state.collected
-  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, progress, collected }
+  // Adaptive: nudge difficulty up after a flawless clear, ease it after a rough one.
+  const delta = stars === 3 ? 1 : stars === 1 ? -1 : 0
+  const skill = Math.max(-2, Math.min(3, state.skill + delta))
+  const worldComplete = state.level % WORLD_SIZE === 0
+  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill }
 }
 
 function reducer(state, action) {
@@ -69,7 +75,7 @@ function reducer(state, action) {
         answered: null,
         wrongCount: 0,
         attempts: 0,
-        questions: genQuestions(LEVELS[n - 1]),
+        questions: genQuestions(LEVELS[n - 1], state.skill),
       }
     }
     case 'ANSWER_CORRECT':
@@ -119,12 +125,12 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, skill: state.skill }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.muted])
+  }, [state.progress, state.collected, state.muted, state.skill])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
@@ -181,6 +187,10 @@ export default function App() {
   const totalStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
   const friendsCount = state.collected.length
   const activeCfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
+  const collectedAnimals = state.collected.map((n) => LEVELS[n - 1].unlock.emoji)
+  const worldAnimals = state.worldComplete
+    ? LEVELS.slice(Math.max(0, state.level - WORLD_SIZE), state.level).map((l) => l.unlock.emoji)
+    : []
 
   return (
     <div className="app-outer">
@@ -189,6 +199,7 @@ export default function App() {
           <HomeScreen
             totalStars={totalStars}
             friendsCount={friendsCount}
+            collectedAnimals={collectedAnimals}
             onPlay={() => navigate('map')}
             onFriends={() => navigate('collection')}
             onOpenSettings={() => setSettingsOpen(true)}
@@ -240,6 +251,10 @@ export default function App() {
             levelNum={state.level}
             stars={state.earnedStars}
             justNew={state.justNew}
+            worldComplete={state.worldComplete}
+            worldAnimals={worldAnimals}
+            hasNext={state.level < LEVELS.length}
+            onNext={() => openIntro(state.level + 1)}
             onContinue={() => navigate('map')}
           />
         )}

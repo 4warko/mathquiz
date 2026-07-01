@@ -6,6 +6,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   { ignores: ['dist'] },
+  // Node-based unit tests.
+  { files: ['test/**/*.js'], languageOptions: { globals: globals.node } },
+  // Service worker runs in the ServiceWorkerGlobalScope, not the window.
+  { files: ['public/sw.js'], languageOptions: { globals: globals.serviceworker } },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

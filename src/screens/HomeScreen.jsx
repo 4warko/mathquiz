@@ -1,6 +1,6 @@
 import useFocusOnMount from '../useFocusOnMount'
 
-export default function HomeScreen({ totalStars, friendsCount, onPlay, onFriends, onOpenSettings }) {
+export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], onPlay, onFriends, onOpenSettings }) {
   const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--home home">
@@ -17,6 +17,12 @@ export default function HomeScreen({ totalStars, friendsCount, onPlay, onFriends
           <span className="pill pill--friends"><span aria-hidden="true">🐾</span> {friendsCount}</span>
         </div>
       </div>
+
+      {collectedAnimals.length > 0 && (
+        <div className="home__menagerie" aria-label={`${collectedAnimals.length} animal friends collected`}>
+          {collectedAnimals.map((e, i) => <span key={i} aria-hidden="true">{e}</span>)}
+        </div>
+      )}
 
       <div className="home__actions">
         <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onPlay}>

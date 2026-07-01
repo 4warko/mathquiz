@@ -8,7 +8,7 @@ const CHEERS = {
   1: ['You did it, Holly! 💪', 'Nice work — keep on tumbling! 🤸', 'Every champ practices — well done! 🌟'],
 }
 
-export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue }) {
+export default function RewardScreen({ cfg, levelNum, stars, justNew, worldComplete, worldAnimals, hasNext, onNext, onContinue }) {
   const headingRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
   const cheer = useMemo(() => {
@@ -53,6 +53,8 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
           ))}
         </div>
 
+        {worldComplete && <div className="reward__world">🎉 World Complete! 🎉</div>}
+
         <div className="reward__animal" aria-hidden="true">{cfg.unlock.emoji}</div>
 
         <h1 className="reward__title" ref={headingRef} tabIndex={-1}>
@@ -62,9 +64,28 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
 
         <div className="reward__cheer">{cheer}</div>
 
-        <button type="button" className="btn btn--primary btn--lg btn--block tap" style={{ marginTop: 'var(--s-4)' }} onClick={onContinue}>
-          Keep going <span aria-hidden="true">→</span>
-        </button>
+        {worldComplete && worldAnimals.length > 0 && (
+          <div className="reward__world-animals" aria-hidden="true">
+            {worldAnimals.map((e, i) => <span key={i}>{e}</span>)}
+          </div>
+        )}
+
+        <div className="reward__actions">
+          {hasNext ? (
+            <>
+              <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onNext}>
+                Next level <span aria-hidden="true">→</span>
+              </button>
+              <button type="button" className="btn btn--block tap" onClick={onContinue}>
+                <span aria-hidden="true">🗺️</span> Back to map
+              </button>
+            </>
+          ) : (
+            <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onContinue}>
+              <span aria-hidden="true">🏆</span> You did it all — back to map
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

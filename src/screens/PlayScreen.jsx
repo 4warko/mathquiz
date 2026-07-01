@@ -26,7 +26,7 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
     return side === a.side ? 'wrong' : 'idle'
   }
 
-  const isNumberQ = q.kind === 'add' || q.kind === 'sub'
+  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond'
 
   return (
     <div className="screen screen--play" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
@@ -78,28 +78,46 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
         {isNumberQ && (
           <div className="qcard">
             {q.kind === 'add' && (
-              <div className="eq-row">
-                <div className="eq-group" style={{ fontSize: emojiSize(q.a + q.b) }}>
-                  {Array.from({ length: q.a }).map((_, k) => <span key={k} className="emoji" aria-hidden="true">{q.animal}</span>)}
+              <>
+                <div className="eq-row">
+                  <div className="eq-group" style={{ fontSize: emojiSize(q.a + q.b) }}>
+                    {Array.from({ length: q.a }).map((_, k) => <span key={k} className="emoji" aria-hidden="true">{q.animal}</span>)}
+                  </div>
+                  <span className="eq-plus" aria-hidden="true">+</span>
+                  <div className="eq-group" style={{ fontSize: emojiSize(q.a + q.b) }}>
+                    {Array.from({ length: q.b }).map((_, k) => <span key={k} className="emoji" aria-hidden="true">{q.animal}</span>)}
+                  </div>
                 </div>
-                <span className="eq-plus" aria-hidden="true">+</span>
-                <div className="eq-group" style={{ fontSize: emojiSize(q.a + q.b) }}>
-                  {Array.from({ length: q.b }).map((_, k) => <span key={k} className="emoji" aria-hidden="true">{q.animal}</span>)}
-                </div>
-              </div>
+                <div className="eq-line">{q.a} + {q.b} = <span className="eq-q">?</span></div>
+              </>
             )}
 
             {q.kind === 'sub' && (
-              <div className="sub-grid" style={{ fontSize: emojiSize(q.a) }}>
-                {Array.from({ length: q.a }).map((_, k) => (
-                  <span key={k} className={`emoji${k >= q.a - q.b ? ' is-gone' : ''}`} aria-hidden="true">{q.animal}</span>
-                ))}
-              </div>
+              <>
+                <div className="sub-grid" style={{ fontSize: emojiSize(q.a) }}>
+                  {Array.from({ length: q.a }).map((_, k) => (
+                    <span key={k} className={`emoji${k >= q.a - q.b ? ' is-gone' : ''}`} aria-hidden="true">{q.animal}</span>
+                  ))}
+                </div>
+                <div className="eq-line">{q.a} − {q.b} = <span className="eq-q">?</span></div>
+              </>
             )}
 
-            <div className="eq-line">
-              {q.kind === 'add' ? `${q.a} + ${q.b}` : `${q.a} − ${q.b}`} = <span className="eq-q">?</span>
-            </div>
+            {q.kind === 'bond' && (
+              <>
+                <div className="eq-group" style={{ fontSize: emojiSize(q.a) }}>
+                  {Array.from({ length: q.a }).map((_, k) => <span key={k} className="emoji" aria-hidden="true">{q.animal}</span>)}
+                </div>
+                <div className="eq-line">{q.a} + <span className="eq-q">?</span> = {q.total}</div>
+              </>
+            )}
+
+            {q.kind === 'seq' && (
+              <div className="seq-row">
+                {q.seq.map((n, k) => <span key={k} className="seq-box">{n}</span>)}
+                <span className="seq-box seq-box--q" aria-hidden="true">?</span>
+              </div>
+            )}
           </div>
         )}
       </div>

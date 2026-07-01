@@ -45,6 +45,24 @@ const genOne = (cfg) => {
     }
   }
 
+  if (cfg.type === 'seq') {
+    const step = cfg.step || 1
+    const start = rand(1, cfg.startMax || 5)
+    const seq = [start, start + step, start + 2 * step]
+    const answer = start + 3 * step
+    return { kind: 'seq', seq, answer, choices: makeChoices(answer), prompt: 'What comes next?' }
+  }
+
+  if (cfg.type === 'bond') {
+    const total = rand(3, cfg.sumMax)
+    const a = rand(1, total - 1)
+    const answer = total - a
+    return {
+      kind: 'bond', a, total, animal: cfg.animals[0], answer, choices: makeChoices(answer),
+      prompt: `How many more make ${total}?`,
+    }
+  }
+
   // compare
   const { lo, hi } = cfg
   let ca = rand(lo, hi)
@@ -62,12 +80,36 @@ const genOne = (cfg) => {
   }
 }
 
-export const genQuestions = (cfg) => Array.from({ length: 5 }, () => genOne(cfg))
+// Adaptive difficulty: nudge a level's number ranges by the child's skill
+// (persisted, clamped to [-2, 3]) so it grows with them but never runs away.
+const withSkill = (cfg, skill) => {
+  const s = Math.max(-2, Math.min(3, skill || 0))
+  if (!s) return cfg
+  const bump = (v) => Math.max(4, Math.min(v + 4, v + s))
+  switch (cfg.type) {
+    case 'add':
+    case 'bond':
+      return { ...cfg, sumMax: bump(cfg.sumMax) }
+    case 'sub':
+      return { ...cfg, minMax: bump(cfg.minMax) }
+    case 'compare':
+      return { ...cfg, hi: bump(cfg.hi) }
+    default: // sequences stay fixed so the step stays learnable
+      return cfg
+  }
+}
+
+export const genQuestions = (cfg, skill = 0) => {
+  const adjusted = withSkill(cfg, skill)
+  return Array.from({ length: 5 }, () => genOne(adjusted))
+}
 
 // A short "what you'll do" line for the level-intro screen.
 export const howToPlay = (cfg) => {
   if (cfg.type === 'add') return 'Count all the animals and tap the total!'
   if (cfg.type === 'sub') return 'Some animals hop away — how many are left?'
+  if (cfg.type === 'seq') return 'Look at the numbers — what comes next?'
+  if (cfg.type === 'bond') return 'How many more do you need to reach the number?'
   return 'Tap the group with more (or fewer)!'
 }
 

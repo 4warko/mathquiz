@@ -393,6 +393,22 @@ button.pill { min-height: var(--tap); }
 }
 .eq-q { color: var(--eq-accent); }
 
+/* Number-sequence question ("what comes next?"). */
+.seq-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); }
+.seq-box {
+  min-width: 48px;
+  padding: var(--s-2) var(--s-3);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-2xl);
+  color: var(--ink);
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-sm);
+}
+.seq-box--q { color: var(--eq-accent); background: var(--tint); }
+
 .choices { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: center; width: 100%; }
 .choice {
   min-width: 0;       /* allow shrink so 3 choices stay on one row at 320px */
@@ -481,6 +497,26 @@ button.pill { min-height: var(--tap); }
 .reward__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-xl); color: var(--ink); }
 .reward__sub { font-size: var(--fs-sm); color: var(--ink-soft); }
 .reward__cheer { font-size: var(--fs-md); color: var(--ink); margin-top: var(--s-1); text-wrap: balance; }
+.reward__world {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-pill);
+  padding: var(--s-1) var(--s-4);
+  box-shadow: var(--shadow-sm);
+  animation: popIn 0.5s ease both;
+}
+.reward__world-animals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-1) var(--s-2);
+  font-size: clamp(28px, 9cqi, 40px);
+}
+.reward__actions { display: flex; flex-direction: column; gap: var(--s-2); width: 100%; margin-top: var(--s-4); }
 /* Confetti is clipped to its own layer so it never adds scroll height. */
 .confetti-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
 .confetti { position: absolute; top: -6%; }
@@ -536,6 +572,16 @@ button.pill { min-height: var(--tap); }
 .home__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-3xl); color: var(--ink); line-height: 1.05; }
 .home__sub { font-size: var(--fs-md); color: var(--ink-soft); }
 .home__actions { display: flex; flex-direction: column; gap: var(--s-3); width: 100%; max-width: 320px; }
+/* The growing collection, shown on the home hub. */
+.home__menagerie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-1) var(--s-2);
+  max-width: 320px;
+  font-size: clamp(26px, 8cqi, 38px);
+  line-height: 1.1;
+}
 
 /* ---------- Intro ---------- */
 .intro {

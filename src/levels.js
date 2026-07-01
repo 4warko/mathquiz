@@ -1,6 +1,11 @@
 // Level definitions for Holly's Animal Math.
-// Each level has a math `type` (add | sub | compare), difficulty config,
-// and the animal friend you unlock by completing it.
+// Each level has a math `type` (add | sub | compare | seq | bond), difficulty
+// config, and the animal friend you unlock by completing it.
+
+// Levels are grouped into "worlds" of this size; finishing the last level of a
+// world triggers a milestone celebration.
+export const WORLD_SIZE = 4
+
 export const LEVELS = [
   { name: 'Sunny Meadow',     type: 'add',     sumMax: 8,  animals: ['🐰'],       unlock: { emoji: '🐰', name: 'Bun-Bun' }, accent: '#7fb069', tint: '#eef3d9' },
   { name: 'Barnyard',         type: 'add',     sumMax: 12, animals: ['🐔'],       unlock: { emoji: '🐔', name: 'Cluck' },   accent: '#e6a93a', tint: '#fbeecf' },
@@ -14,4 +19,8 @@ export const LEVELS = [
   { name: 'Wild Jungle',      type: 'add',     sumMax: 20, animals: ['🐵'],       unlock: { emoji: '🐵', name: 'Coco' },    accent: '#6fa03e', tint: '#e5efce' },
   { name: 'Golden Savanna',   type: 'compare', lo: 6, hi: 18, wants: ['more', 'fewer'], animals: ['🐘', '🦁'], unlock: { emoji: '🐘', name: 'Tembo' },   accent: '#d8a24a', tint: '#f5e9c8' },
   { name: 'Rainbow Peak',     type: 'add',     sumMax: 20, animals: ['🦄'],       unlock: { emoji: '🦄', name: 'Sparkle' }, accent: '#c46aa0', tint: '#f6e4ef' },
+  { name: 'Buzzy Garden',     type: 'seq',     step: 1, startMax: 6,  animals: ['🐝'], unlock: { emoji: '🐝', name: 'Buzz' },    accent: '#d99a2b', tint: '#f7edcb' },
+  { name: 'Clover Field',     type: 'bond',    sumMax: 10, animals: ['🐴'],       unlock: { emoji: '🐴', name: 'Clover' },  accent: '#6fa93f', tint: '#e6f0d6' },
+  { name: 'Starry Night',     type: 'seq',     step: 2, startMax: 4,  animals: ['🦉'], unlock: { emoji: '🦉', name: 'Hoot' },    accent: '#5a6bb0', tint: '#e2e4f2' },
+  { name: 'Splashy Cove',     type: 'bond',    sumMax: 15, animals: ['🐬'],       unlock: { emoji: '🐬', name: 'Splash' },  accent: '#3f97b3', tint: '#d9eef4' },
 ]
