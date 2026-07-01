@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { LEVELS } from './levels'
 import { genQuestions } from './game'
-import { playCorrect, playWrong, playFanfare } from './sound'
+import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
 import IntroScreen from './screens/IntroScreen'
@@ -103,6 +103,13 @@ export default function App() {
   const timerRef = useRef(null)
   const clearTimer = () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null } }
   useEffect(() => clearTimer, [])
+
+  // Prime Web Audio on the first touch so the first sound is reliable on iOS.
+  useEffect(() => {
+    const unlock = () => unlockAudio()
+    window.addEventListener('pointerdown', unlock, { once: true })
+    return () => window.removeEventListener('pointerdown', unlock)
+  }, [])
 
   // Persist progress, collection, and the sound preference whenever they change.
   useEffect(() => {
@@ -236,6 +243,7 @@ export default function App() {
             levels={LEVELS}
             collected={state.collected}
             friendsCount={friendsCount}
+            muted={state.muted}
             onNavigate={navigate}
           />
         )}

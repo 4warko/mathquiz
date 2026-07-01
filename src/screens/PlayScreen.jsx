@@ -47,6 +47,8 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
       </header>
 
       <div className="play__stage">
+        <div className={`buddy${a?.correct ? ' buddy--cheer' : ''}`} aria-hidden="true">{cfg.unlock.emoji}</div>
+
         {a && (
           <div className={`toast ${a.correct ? 'toast--ok' : 'toast--no'}`} role="status">
             {a.correct ? 'Yay! Correct! 🎉' : 'Oops — try again! 💪'}

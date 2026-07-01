@@ -2,6 +2,13 @@ import { useEffect, useRef } from 'react'
 import BottomNav from '../components/BottomNav'
 import useFocusOnMount from '../useFocusOnMount'
 
+// Trail geometry — the single source for both the layout math and each node's
+// inline size (NODE), so the two can't drift apart.
+const NODE = 82    // node diameter in px (applied inline below)
+const STEP = 135   // vertical distance between node centers
+const TOP = 70     // y of the first node's center
+const PAD = 90     // breathing room below the last node
+const CENTER = 190 // distance from the top to park the current node on scroll
 // Horizontal position (percent) for each node, cycling down the trail.
 const XS = [26, 50, 74, 50]
 
@@ -17,13 +24,13 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
     for (let n = 1; n <= levels.length; n++) {
       if ((n === 1 || progress[n - 1]) && !progress[n]) { cur = n; break }
     }
-    const y = 70 + (cur - 1) * 135
-    el.scrollTop = Math.max(0, y - 190)
+    const y = TOP + (cur - 1) * STEP
+    el.scrollTop = Math.max(0, y - CENTER)
     // Only auto-scroll on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const mapHeight = 70 + (levels.length - 1) * 135 + 90
+  const mapHeight = TOP + (levels.length - 1) * STEP + PAD
 
   return (
     <div className="screen screen--map">
@@ -62,7 +69,7 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
                 key={n}
                 type="button"
                 className={cls}
-                style={{ left: `${XS[i % 4]}%`, top: `${70 + i * 135}px` }}
+                style={{ left: `${XS[i % 4]}%`, top: `${TOP + i * STEP}px`, width: NODE, height: NODE }}
                 disabled={!canPlay}
                 aria-label={label}
                 onClick={canPlay ? () => onStart(n) : undefined}

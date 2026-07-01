@@ -39,7 +39,7 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
           <div
             key={i}
             className={`confetti confetti--${c.color}`}
-            style={{ left: c.left, width: c.width, height: c.height, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite` }}
+            style={{ left: c.left, width: c.width, height: c.height, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s 3` }}
           />
         ))}
       </div>

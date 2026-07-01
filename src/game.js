@@ -71,5 +71,10 @@ export const howToPlay = (cfg) => {
   return 'Tap the group with more (or fewer)!'
 }
 
-// Scale emoji down as the group grows so it still fits its container.
-export const emojiSize = (count) => (count <= 6 ? '32px' : count <= 12 ? '25px' : '20px')
+// Scale emoji with the frame (container units) so big groups stay countable.
+export const emojiSize = (count) =>
+  count <= 6
+    ? 'clamp(30px, 9cqi, 42px)'
+    : count <= 12
+      ? 'clamp(24px, 7cqi, 34px)'
+      : 'clamp(20px, 5.5cqi, 28px)'

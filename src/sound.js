@@ -26,6 +26,32 @@ function blip(c, freq, start, dur, type = 'triangle', peak = 0.18) {
   osc.stop(start + dur + 0.03)
 }
 
+// Prime the audio engine inside a user gesture. iOS keeps the AudioContext
+// suspended until a gesture plays something, so a silent buffer here makes the
+// first real sound reliable. (Note: audio can still be muted by the iPhone's
+// hardware ring/silent switch — that's outside a web page's control.)
+export function unlockAudio() {
+  const c = getCtx()
+  if (!c) return
+  try {
+    const src = c.createBufferSource()
+    src.buffer = c.createBuffer(1, 1, 22050)
+    src.connect(c.destination)
+    src.start(0)
+  } catch {
+    /* ignore */
+  }
+}
+
+// A quick, cute chirp — used when a collected animal is tapped.
+export function playPop() {
+  const c = getCtx()
+  if (!c) return
+  const t = c.currentTime
+  blip(c, 880, t, 0.09)
+  blip(c, 1320, t + 0.06, 0.12)
+}
+
 // Happy little rising two-note for a correct answer.
 export function playCorrect() {
   const c = getCtx()
