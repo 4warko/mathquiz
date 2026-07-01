@@ -53,6 +53,16 @@ export default function App() {
   const clearTimer = () => { if (timerRef.current) clearTimeout(timerRef.current) }
   useEffect(() => clearTimer, [])
 
+  // Tint the mobile status bar to match the current screen's top color.
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) return
+    const cfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
+    const byScreen = { home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2' }
+    const color = ['intro', 'play', 'reward'].includes(state.screen) ? cfg.tint : byScreen[state.screen] || '#e7dcc4'
+    meta.setAttribute('content', color)
+  }, [state.screen, state.level, state.pendingLevel])
+
   const playable = (n) => n === 1 || !!state.progress[n - 1]
 
   const navigate = (screen) => { clearTimer(); setState({ screen }) }

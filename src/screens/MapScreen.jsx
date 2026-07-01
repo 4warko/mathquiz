@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react'
 import BottomNav from '../components/BottomNav'
+import useFocusOnMount from '../useFocusOnMount'
 
 // Horizontal position (percent) for each node, cycling down the trail.
 const XS = [26, 50, 74, 50]
 
 export default function MapScreen({ levels, progress, playable, totalStars, friendsCount, onStart, onNavigate }) {
   const scrollRef = useRef(null)
+  const titleRef = useFocusOnMount()
 
   useEffect(() => {
     const el = scrollRef.current
@@ -27,7 +29,7 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
     <div className="screen screen--map">
       <header className="topbar topbar--glass">
         <div className="topbar__grow">
-          <div className="topbar__title">Holly&apos;s Animal Math</div>
+          <h1 className="topbar__title" ref={titleRef} tabIndex={-1}>Holly&apos;s Animal Math</h1>
           <div className="topbar__sub">Tap a spot to play!</div>
         </div>
         <div className="topbar__actions">

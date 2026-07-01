@@ -1,9 +1,12 @@
+import useFocusOnMount from '../useFocusOnMount'
+
 export default function HomeScreen({ totalStars, friendsCount, onPlay, onFriends }) {
+  const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--home home">
       <div className="home__top">
         <div className="home__hero" aria-hidden="true">🐰</div>
-        <h1 className="home__title">Holly&apos;s Animal Math</h1>
+        <h1 className="home__title" ref={titleRef} tabIndex={-1}>Holly&apos;s Animal Math</h1>
         <p className="home__sub">Let&apos;s practice counting and meet new animal friends!</p>
         <div className="topbar__actions" style={{ marginTop: 'var(--s-2)' }}>
           <span className="pill pill--star"><span aria-hidden="true">⭐</span> {totalStars}</span>

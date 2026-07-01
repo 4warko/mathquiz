@@ -1,6 +1,8 @@
 import BottomNav from '../components/BottomNav'
+import useFocusOnMount from '../useFocusOnMount'
 
 export default function CollectionScreen({ levels, collected, friendsCount, onNavigate }) {
+  const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--collection">
       <header className="topbar topbar--glass">
@@ -8,7 +10,7 @@ export default function CollectionScreen({ levels, collected, friendsCount, onNa
           <span aria-hidden="true">←</span>
         </button>
         <div className="topbar__grow">
-          <div className="topbar__title">My Animal Friends</div>
+          <h1 className="topbar__title" ref={titleRef} tabIndex={-1}>My Animal Friends</h1>
           <div className="topbar__sub">{friendsCount} of {levels.length} found</div>
         </div>
       </header>

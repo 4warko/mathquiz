@@ -48,9 +48,10 @@
 .screen--home { background: radial-gradient(circle at 50% 22%, #fff6ea, #f4ead2); }
 .screen--reward {
   background: radial-gradient(circle at 50% 28%, #fff8ee, var(--tint));
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   align-items: center;
-  justify-content: center;
   text-align: center;
   padding: var(--s-8) var(--s-6);
 }
@@ -59,6 +60,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -149,7 +151,9 @@ button.pill { min-height: var(--tap); }
   font-size: var(--fs-lg);
   box-shadow: var(--shadow-md);
 }
-.btn--primary { background: var(--accent); color: var(--on-primary); }
+/* Primary CTA is always the accessible brand orange for a consistent,
+   high-contrast action color (per-world accent stays decorative). */
+.btn--primary { background: var(--primary); color: var(--on-primary); }
 .btn--block { width: 100%; }
 .btn--lg { padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); box-shadow: var(--shadow-lg); }
 
@@ -323,10 +327,10 @@ button.pill { min-height: var(--tap); }
 }
 .eq-q { color: #c0553f; }
 
-.choices { display: flex; gap: var(--s-3); flex-wrap: wrap; justify-content: center; width: 100%; }
+.choices { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: center; width: 100%; }
 .choice {
-  min-width: 90px;
-  flex: 1 1 auto;
+  min-width: 0;       /* allow shrink so 3 choices stay on one row at 320px */
+  flex: 1 1 0;
   max-width: 130px;
   padding: var(--s-4) var(--s-3);
   font-family: var(--font-display);
@@ -411,7 +415,10 @@ button.pill { min-height: var(--tap); }
 .reward__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-xl); color: var(--ink); }
 .reward__sub { font-size: var(--fs-sm); color: var(--ink-soft); }
 .reward__cheer { font-size: var(--fs-md); color: var(--ink); margin-top: var(--s-1); text-wrap: balance; }
-.confetti { position: absolute; top: -6%; z-index: 1; }
+.reward__card { margin: auto; }  /* scroll-safe vertical centering */
+/* Confetti is clipped to its own layer so it never adds scroll height. */
+.confetti-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.confetti { position: absolute; top: -6%; }
 
 /* ---------- Collection ---------- */
 .coll-grid {
@@ -447,6 +454,8 @@ button.pill { min-height: var(--tap); }
   align-items: center;
   justify-content: space-between;
   text-align: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: max(var(--s-8), env(safe-area-inset-top)) var(--s-6) max(var(--s-6), env(safe-area-inset-bottom));
 }
 .home__top { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); margin-top: var(--s-6); }
@@ -458,11 +467,13 @@ button.pill { min-height: var(--tap); }
 /* ---------- Intro ---------- */
 .intro {
   align-items: center;
-  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   text-align: center;
   padding: var(--s-6);
 }
 .intro__card {
+  margin: auto;  /* scroll-safe vertical centering */
   display: flex;
   flex-direction: column;
   align-items: center;

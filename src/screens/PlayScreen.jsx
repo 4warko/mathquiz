@@ -1,6 +1,8 @@
 import { emojiSize } from '../game'
+import useFocusOnMount from '../useFocusOnMount'
 
 export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, onBack, onAnswer, onAnswerCompare }) {
+  const titleRef = useFocusOnMount()
   const q = question || {}
   const a = answered
 
@@ -26,7 +28,7 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
           <span aria-hidden="true">←</span>
         </button>
         <div className="topbar__grow">
-          <div className="topbar__title" style={{ fontSize: 'var(--fs-lg)' }}>{cfg.name}</div>
+          <h1 className="topbar__title" style={{ fontSize: 'var(--fs-lg)' }} ref={titleRef} tabIndex={-1}>{cfg.name}</h1>
           <div className="progress" aria-label={`Question ${qIndex + 1} of 5`}>
             {[0, 1, 2, 3, 4].map((i) => {
               const cls = i < qIndex ? 'dot dot--done' : i === qIndex ? 'dot dot--cur' : 'dot'

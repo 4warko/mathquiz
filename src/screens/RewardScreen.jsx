@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { rand } from '../game'
+import useFocusOnMount from '../useFocusOnMount'
 
 const CHEERS = {
   3: ['Holly, that was a PERFECT 10! 🤸', 'Gold medal, Holly! Flawless landing! 🥇', 'Wow — you stuck every landing! 🤸‍♀️'],
@@ -10,6 +11,7 @@ const CHEERS = {
 const CONFETTI_COLORS = ['#ef8354', '#7fb069', '#5aa9d6', '#f2c14e', '#d0587e', '#9b6bce']
 
 export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue }) {
+  const labelRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
   const cheer = useMemo(() => {
     const arr = CHEERS[stars] || CHEERS[1]
@@ -34,17 +36,18 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
 
   return (
     <div className="screen screen--reward" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
-      {confetti.map((c, i) => (
-        <div
-          key={i}
-          className="confetti"
-          aria-hidden="true"
-          style={{ left: c.left, width: c.width, height: c.height, background: c.background, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite` }}
-        />
-      ))}
+      <div className="confetti-layer" aria-hidden="true">
+        {confetti.map((c, i) => (
+          <div
+            key={i}
+            className="confetti"
+            style={{ left: c.left, width: c.width, height: c.height, background: c.background, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite` }}
+          />
+        ))}
+      </div>
 
       <div className="reward__card">
-        <div className="reward__label">LEVEL {levelNum} COMPLETE</div>
+        <div className="reward__label" ref={labelRef} tabIndex={-1}>LEVEL {levelNum} COMPLETE</div>
 
         <div className="stars">
           {[0, 1, 2].map((i) => (

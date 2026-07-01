@@ -10,8 +10,8 @@
 
   /* — Ink & surfaces — */
   --ink: #41332a;
-  --ink-soft: #7a6a58;
-  --ink-faint: #b3a48c;
+  --ink-soft: #6b5c4a;  /* darkened → clears WCAG AA (4.5:1) on cream */
+  --ink-faint: #8a7a63; /* darkened → readable locked labels */
   --paper: #e7dcc4;
   --paper-dot: #dccdb0;
   --surface: #fffaf0;
@@ -19,9 +19,9 @@
   --surface-glass: rgba(255, 250, 240, 0.82);
 
   /* — Brand & semantic — */
-  --primary: #ef8354;
+  --primary: #d9663d;   /* darkened orange → white large-text clears ~3:1 */
   --on-primary: #fffaf0;
-  --success: #7fb069;
+  --success: #4f8a3f;   /* darkened green for the "correct" toast */
   --star: #f2c14e;
   --correct: #b6e29a;
   --wrong: #f2ab9d;
