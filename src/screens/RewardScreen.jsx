@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { INK, rand } from '../game'
+import { rand } from '../game'
 
 const CHEERS = {
   3: ['Holly, that was a PERFECT 10! 🤸', 'Gold medal, Holly! Flawless landing! 🥇', 'Wow — you stuck every landing! 🤸‍♀️'],
@@ -33,34 +33,41 @@ export default function RewardScreen({ cfg, levelNum, stars, justNew, onContinue
   )
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '28px 24px', background: `radial-gradient(circle at 50% 28%, #fff8ee, ${cfg.tint})` }}>
+    <div className="screen screen--reward" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
       {confetti.map((c, i) => (
-        <div key={i} style={{ position: 'absolute', top: '-6%', left: c.left, width: c.width, height: c.height, background: c.background, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite`, zIndex: 1 }} />
+        <div
+          key={i}
+          className="confetti"
+          aria-hidden="true"
+          style={{ left: c.left, width: c.width, height: c.height, background: c.background, borderRadius: c.borderRadius, animation: `confettiFall ${c.duration}s linear ${c.delay}s infinite` }}
+        />
       ))}
 
-      <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: 15, letterSpacing: 2, color: '#7a6a58' }}>LEVEL {levelNum} COMPLETE</div>
+      <div className="reward__card">
+        <div className="reward__label">LEVEL {levelNum} COMPLETE</div>
 
-        <div style={{ display: 'flex', gap: 6, margin: '2px 0 8px' }}>
+        <div className="stars">
           {[0, 1, 2].map((i) => (
-            <span key={i} style={{ fontSize: 40, filter: i < stars ? 'none' : 'grayscale(1)', opacity: i < stars ? 1 : 0.35, animation: 'popIn .5s ease both', animationDelay: `${0.15 + i * 0.22}s` }}>⭐</span>
+            <span key={i} className={`star${i < stars ? '' : ' is-empty'}`} style={{ animationDelay: `${0.15 + i * 0.22}s` }} aria-hidden="true">⭐</span>
           ))}
         </div>
 
-        <div style={{ fontSize: 104, lineHeight: 1, animation: 'cheerBounce 1.1s ease-in-out infinite' }}>{cfg.unlock.emoji}</div>
+        <div className="reward__animal" aria-hidden="true">{cfg.unlock.emoji}</div>
 
         {justNew ? (
           <>
-            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: 26, color: INK }}>You found {cfg.unlock.name}! 🎉</div>
-            <div style={{ fontSize: 18, color: '#7a6a58' }}>A new friend joined your collection</div>
+            <div className="reward__title">You found {cfg.unlock.name}! 🎉</div>
+            <div className="reward__sub">A new friend joined your collection</div>
           </>
         ) : (
-          <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: 26, color: INK }}>{cfg.unlock.name} is so proud!</div>
+          <div className="reward__title">{cfg.unlock.name} is so proud!</div>
         )}
 
-        <div style={{ fontSize: 20, color: INK, marginTop: 6, maxWidth: 280, textWrap: 'balance' }}>{cheer}</div>
+        <div className="reward__cheer">{cheer}</div>
 
-        <button onClick={onContinue} style={{ marginTop: 22, fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: 22, color: '#fffaf0', background: '#ef8354', border: `3px solid ${INK}`, borderRadius: '20px 24px 18px 26px / 24px 18px 26px 20px', padding: '14px 34px', boxShadow: `3px 5px 0 ${INK}`, cursor: 'pointer' }}>Keep going →</button>
+        <button type="button" className="btn btn--primary btn--lg btn--block tap" style={{ marginTop: 'var(--s-4)' }} onClick={onContinue}>
+          Keep going <span aria-hidden="true">→</span>
+        </button>
       </div>
     </div>
   )

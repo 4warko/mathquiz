@@ -1,0 +1,70 @@
+/* ============================================================
+   Design tokens — the single source of truth for the redesign.
+   Everything downstream (layout, components, screens) references
+   these variables instead of hard-coded values.
+   ============================================================ */
+:root {
+  /* — Type families (with fast-rendering fallbacks to reduce FOUT) — */
+  --font-display: 'Baloo 2', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Patrick Hand', 'Comic Sans MS', system-ui, cursive;
+
+  /* — Ink & surfaces — */
+  --ink: #41332a;
+  --ink-soft: #7a6a58;
+  --ink-faint: #b3a48c;
+  --paper: #e7dcc4;
+  --paper-dot: #dccdb0;
+  --surface: #fffaf0;
+  --surface-2: #efe6d3;
+  --surface-glass: rgba(255, 250, 240, 0.82);
+
+  /* — Brand & semantic — */
+  --primary: #ef8354;
+  --on-primary: #fffaf0;
+  --success: #7fb069;
+  --star: #f2c14e;
+  --correct: #b6e29a;
+  --wrong: #f2ab9d;
+  /* Per-world accent + soft tint; overridden inline per level. */
+  --accent: var(--primary);
+  --tint: var(--surface);
+
+  /* — Spacing (4px base) — */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px;
+
+  /* — Radii — */
+  --r-sm: 12px; --r-md: 16px; --r-lg: 22px; --r-pill: 999px;
+  --r-wobble: 20px 24px 18px 26px / 24px 18px 26px 20px;
+  --r-wobble-lg: 26px 30px 24px 32px / 30px 24px 32px 26px;
+  --r-blob: 42% 46% 40% 48% / 46% 40% 48% 42%;
+
+  /* — Elevation: consistent ink-offset "sticker" shadows — */
+  --shadow-sm: 2px 3px 0 var(--ink);
+  --shadow-md: 3px 4px 0 var(--ink);
+  --shadow-lg: 3px 5px 0 var(--ink);
+  --shadow-pressed: 1px 2px 0 var(--ink);
+  --shadow-ambient: 0 18px 60px rgba(65, 51, 42, 0.35);
+
+  /* — Fluid type: scales with the frame via container-query units — */
+  --fs-xxs: clamp(10.5px, 3cqi, 13px);
+  --fs-xs:  clamp(12px, 3.4cqi, 15px);
+  --fs-sm:  clamp(14px, 3.9cqi, 17px);
+  --fs-md:  clamp(16px, 4.6cqi, 20px);
+  --fs-lg:  clamp(18px, 5.2cqi, 23px);
+  --fs-xl:  clamp(21px, 6.2cqi, 28px);
+  --fs-2xl: clamp(26px, 7.6cqi, 36px);
+  --fs-3xl: clamp(33px, 9.6cqi, 46px);
+  --fs-star: clamp(32px, 10cqi, 44px);
+  --fs-hero: clamp(78px, 25cqi, 116px);
+
+  /* — Interaction — */
+  --tap: 48px;          /* minimum touch target */
+  --t-fast: 120ms;
+  --t: 200ms;
+
+  /* — Layers — */
+  --z-nav: 10;
+  --z-toast: 20;
+  --z-overlay: 30;
+}

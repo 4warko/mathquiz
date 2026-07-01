@@ -1,6 +1,4 @@
-// Pure game logic + shared style helpers. No React in here.
-
-export const INK = '#41332a'
+// Pure game logic. Presentation now lives in CSS (see App.css / tokens.css).
 
 export const rand = (lo, hi) => Math.floor(Math.random() * (hi - lo + 1)) + lo
 
@@ -66,33 +64,12 @@ const genOne = (cfg) => {
 
 export const genQuestions = (cfg) => Array.from({ length: 5 }, () => genOne(cfg))
 
-// Scale emoji down as the group grows so it still fits.
+// A short "what you'll do" line for the level-intro screen.
+export const howToPlay = (cfg) => {
+  if (cfg.type === 'add') return 'Count all the animals and tap the total!'
+  if (cfg.type === 'sub') return 'Some animals hop away — how many are left?'
+  return 'Tap the group with more (or fewer)!'
+}
+
+// Scale emoji down as the group grows so it still fits its container.
 export const emojiSize = (count) => (count <= 6 ? '32px' : count <= 12 ? '25px' : '20px')
-
-// Style for the number-answer buttons, reacting to answer state.
-export const choiceStyle = (state) => {
-  const base = {
-    minWidth: '90px', padding: '16px 12px',
-    fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '42px', lineHeight: 1, color: INK,
-    background: '#fffaf0', border: `3px solid ${INK}`,
-    borderRadius: '20px 24px 18px 26px / 24px 18px 26px 20px',
-    boxShadow: `3px 4px 0 ${INK}`, cursor: 'pointer', transition: 'transform .12s ease',
-  }
-  if (state === 'correct') return { ...base, background: '#b6e29a', transform: 'scale(1.07)' }
-  if (state === 'wrong') return { ...base, background: '#f2ab9d', animation: 'shake .4s ease' }
-  if (state === 'dim') return { ...base, opacity: 0.4 }
-  return base
-}
-
-// Style for the two "compare" group panels.
-export const panelStyle = (state) => {
-  const base = {
-    flex: 1, padding: '16px 8px', background: 'rgba(255,255,255,0.7)', border: `3px solid ${INK}`,
-    borderRadius: '24px 28px 22px 30px / 28px 22px 30px 24px',
-    boxShadow: `3px 4px 0 ${INK}`, cursor: 'pointer', transition: 'transform .12s ease',
-  }
-  if (state === 'correct') return { ...base, background: '#b6e29a', transform: 'scale(1.04)' }
-  if (state === 'wrong') return { ...base, background: '#f2ab9d', animation: 'shake .4s ease' }
-  if (state === 'dim') return { ...base, opacity: 0.4 }
-  return base
-}

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { LEVELS } from './levels'
 import { genQuestions } from './game'
+import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
+import IntroScreen from './screens/IntroScreen'
 import PlayScreen from './screens/PlayScreen'
 import RewardScreen from './screens/RewardScreen'
 import CollectionScreen from './screens/CollectionScreen'
@@ -22,14 +24,15 @@ function loadSaved() {
 function initialState() {
   const saved = loadSaved()
   return {
-    screen: 'map',      // map | play | reward | collection
-    level: 1,           // 1-based level number
-    qIndex: 0,          // 0..4 within the current level
+    screen: 'home',      // home | map | intro | play | reward | collection
+    level: 1,            // 1-based level number being played
+    pendingLevel: 1,     // level chosen on the intro step
+    qIndex: 0,           // 0..4 within the current level
     questions: [],
-    answered: null,     // { correct, value|side }
+    answered: null,      // { correct, value|side }
     wrongCount: 0,
     earnedStars: 0,
-    justNew: false,     // did this run unlock a brand-new animal?
+    justNew: false,      // did this run unlock a brand-new animal?
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
   }
@@ -47,9 +50,23 @@ export default function App() {
   const setState = (patch) =>
     setStateRaw((prev) => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
 
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
+  const clearTimer = () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  useEffect(() => clearTimer, [])
 
   const playable = (n) => n === 1 || !!state.progress[n - 1]
+
+  const navigate = (screen) => { clearTimer(); setState({ screen }) }
+
+  const openIntro = (n) => {
+    if (!(n === 1 || stateRef.current.progress[n - 1])) return
+    setState({ screen: 'intro', pendingLevel: n })
+  }
+
+  const startLevel = () => {
+    const n = stateRef.current.pendingLevel
+    clearTimer()
+    setState({ screen: 'play', level: n, qIndex: 0, answered: null, wrongCount: 0, questions: genQuestions(LEVELS[n - 1]) })
+  }
 
   const finishLevel = () => {
     const s = stateRef.current
@@ -98,22 +115,22 @@ export default function App() {
     }
   }
 
-  const startLevel = (n) => {
-    if (!playable(n)) return
-    if (timerRef.current) clearTimeout(timerRef.current)
-    setState({ screen: 'play', level: n, qIndex: 0, answered: null, wrongCount: 0, questions: genQuestions(LEVELS[n - 1]) })
-  }
-
-  const onContinue = () => setState({ screen: 'map' })
-  const onBackToMap = () => { if (timerRef.current) clearTimeout(timerRef.current); setState({ screen: 'map' }) }
-  const onOpenCollection = () => setState({ screen: 'collection' })
-
   const totalStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
   const friendsCount = state.collected.length
+  const activeCfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
 
   return (
     <div className="app-outer">
       <div className="app-frame">
+        {state.screen === 'home' && (
+          <HomeScreen
+            totalStars={totalStars}
+            friendsCount={friendsCount}
+            onPlay={() => navigate('map')}
+            onFriends={() => navigate('collection')}
+          />
+        )}
+
         {state.screen === 'map' && (
           <MapScreen
             levels={LEVELS}
@@ -121,19 +138,29 @@ export default function App() {
             playable={playable}
             totalStars={totalStars}
             friendsCount={friendsCount}
+            onStart={openIntro}
+            onNavigate={navigate}
+          />
+        )}
+
+        {state.screen === 'intro' && (
+          <IntroScreen
+            cfg={activeCfg}
+            levelNum={state.pendingLevel}
+            known={state.collected.includes(state.pendingLevel)}
             onStart={startLevel}
-            onOpenCollection={onOpenCollection}
+            onBack={() => navigate('map')}
           />
         )}
 
         {state.screen === 'play' && (
           <PlayScreen
-            cfg={LEVELS[state.level - 1]}
+            cfg={activeCfg}
             levelNum={state.level}
             question={state.questions[state.qIndex]}
             qIndex={state.qIndex}
             answered={state.answered}
-            onBack={onBackToMap}
+            onBack={() => navigate('map')}
             onAnswer={answer}
             onAnswerCompare={answerCompare}
           />
@@ -141,11 +168,11 @@ export default function App() {
 
         {state.screen === 'reward' && (
           <RewardScreen
-            cfg={LEVELS[state.level - 1]}
+            cfg={activeCfg}
             levelNum={state.level}
             stars={state.earnedStars}
             justNew={state.justNew}
-            onContinue={onContinue}
+            onContinue={() => navigate('map')}
           />
         )}
 
@@ -154,7 +181,7 @@ export default function App() {
             levels={LEVELS}
             collected={state.collected}
             friendsCount={friendsCount}
-            onBack={onBackToMap}
+            onNavigate={navigate}
           />
         )}
       </div>
