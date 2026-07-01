@@ -1,7 +1,7 @@
 import { emojiSize } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
 
-export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, hint, onBack, onAnswer, onAnswerCompare }) {
+export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, hint, muted, onToggleMute, onBack, onAnswer, onAnswerCompare }) {
   const titleRef = useFocusOnMount()
   const q = question || {}
   const a = answered
@@ -43,7 +43,18 @@ export default function PlayScreen({ cfg, levelNum, question, qIndex, answered, 
             })}
           </div>
         </div>
-        <span className="lvl-badge">Lvl {levelNum}</span>
+        <div className="topbar__actions">
+          <button
+            type="button"
+            className="icon-btn tap"
+            aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
+            aria-pressed={!muted}
+            onClick={onToggleMute}
+          >
+            <span aria-hidden="true">{muted ? '🔇' : '🔊'}</span>
+          </button>
+          <span className="lvl-badge">Lvl {levelNum}</span>
+        </div>
       </header>
 
       <div className="play__stage">

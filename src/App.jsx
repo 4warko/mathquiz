@@ -204,6 +204,7 @@ export default function App() {
             friendsCount={friendsCount}
             onStart={openIntro}
             onNavigate={navigate}
+            onOpenSettings={() => setSettingsOpen(true)}
           />
         )}
 
@@ -225,6 +226,8 @@ export default function App() {
             qIndex={state.qIndex}
             answered={state.answered}
             hint={state.attempts >= HINT_AFTER}
+            muted={state.muted}
+            onToggleMute={() => dispatch({ type: 'TOGGLE_MUTE' })}
             onBack={() => navigate('map')}
             onAnswer={answer}
             onAnswerCompare={answerCompare}
@@ -250,6 +253,12 @@ export default function App() {
             onNavigate={navigate}
           />
         )}
+      </div>
+
+      <div className="rotate-hint" role="alert">
+        <div className="rotate-hint__emoji" aria-hidden="true">🔄</div>
+        <h1 className="crash__title">Turn your phone up!</h1>
+        <p>Holly&apos;s Animal Math plays best standing tall.</p>
       </div>
 
       {settingsOpen && (

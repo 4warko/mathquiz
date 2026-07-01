@@ -26,7 +26,6 @@
   max-width: 430px;
   height: 100vh;
   height: 100dvh;
-  max-height: 920px;
   overflow: hidden;
   background: var(--surface);
   container-type: inline-size;
@@ -45,6 +44,27 @@
 }
 .crash__emoji { font-size: var(--fs-hero); line-height: 1; }
 .crash__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); color: var(--ink); }
+
+/* Landscape guard: on short landscape phones, ask the player to rotate rather
+   than render the cramped sideways layout. */
+.rotate-hint { display: none; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .app-frame { display: none; }
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-4);
+    padding: var(--s-6);
+    text-align: center;
+    color: var(--ink);
+  }
+  .rotate-hint__emoji { font-size: var(--fs-hero); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
+}
 
 /* ---------- Screens ---------- */
 .screen {
@@ -325,7 +345,7 @@ button.pill { min-height: var(--tap); }
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--fs-sm);
-  color: var(--success);
+  color: var(--hint-ink);
   animation: floaty 1.6s ease-in-out infinite;
 }
 
@@ -492,7 +512,8 @@ button.pill { min-height: var(--tap); }
 /* ---------- Home ---------- */
 .home {
   align-items: center;
-  justify-content: space-between;
+  justify-content: safe center;
+  gap: clamp(var(--s-6), 6dvh, var(--s-10));
   text-align: center;
   overflow-y: auto;
   overscroll-behavior: contain;
