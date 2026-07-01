@@ -3,6 +3,7 @@ const ITEMS = [
   { key: 'home', icon: '🏠', label: 'Home' },
   { key: 'map', icon: '🗺️', label: 'Map' },
   { key: 'collection', icon: '🐾', label: 'Friends' },
+  { key: 'awards', icon: '🏆', label: 'Awards' },
 ]
 
 export default function BottomNav({ active, onNavigate }) {

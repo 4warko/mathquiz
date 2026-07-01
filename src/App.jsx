@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { LEVELS, WORLD_SIZE } from './levels'
 import { genQuestions, genMixed } from './game'
+import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
 import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
@@ -8,6 +9,7 @@ import IntroScreen from './screens/IntroScreen'
 import PlayScreen from './screens/PlayScreen'
 import RewardScreen from './screens/RewardScreen'
 import CollectionScreen from './screens/CollectionScreen'
+import AchievementsScreen from './screens/AchievementsScreen'
 import SettingsModal from './components/SettingsModal'
 import './App.css'
 
@@ -19,11 +21,14 @@ const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0
 function loadSaved() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (s) return { progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted, skill: s.skill || 0 }
+    if (s) return {
+      progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted, skill: s.skill || 0,
+      stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) }, badges: s.badges || [],
+    }
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], muted: false, skill: 0 }
+  return { progress: {}, collected: [], muted: false, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [] }
 }
 
 function init() {
@@ -45,14 +50,27 @@ function init() {
     collected: saved.collected, // [levelNum, ...]
     muted: saved.muted,
     skill: saved.skill,  // adaptive-difficulty offset, [-2, 3]
+    stats: saved.stats,  // { correct, perfect, practiceRounds }
+    badges: saved.badges, // unlocked achievement ids
+    newBadges: [],       // ids unlocked by the run just finished (for the reward screen)
   }
+}
+
+// Recompute unlocked achievements; return the full set plus any newly unlocked.
+function computeBadges(input, prevBadges) {
+  const unlocked = unlockedIds(achievementCtx(input))
+  return { badges: unlocked, newBadges: unlocked.filter((id) => !prevBadges.includes(id)) }
 }
 
 // Compute stars, persist the unlock, and move to the reward screen.
 function finish(state) {
   const stars = state.wrongCount === 0 ? 3 : state.wrongCount <= 2 ? 2 : 1
   // Practice doesn't unlock animals, touch progress, or change skill.
-  if (state.practice) return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false }
+  if (state.practice) {
+    const stats = { ...state.stats, practiceRounds: state.stats.practiceRounds + 1 }
+    const b = computeBadges({ progress: state.progress, collected: state.collected, stats }, state.badges)
+    return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false, stats, badges: b.badges, newBadges: b.newBadges }
+  }
   const prev = state.progress[state.level] || 0
   const isNew = !state.collected.includes(state.level)
   const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
@@ -61,7 +79,9 @@ function finish(state) {
   const delta = stars === 3 ? 1 : stars === 1 ? -1 : 0
   const skill = Math.max(-2, Math.min(3, state.skill + delta))
   const worldComplete = state.level % WORLD_SIZE === 0
-  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill }
+  const stats = { ...state.stats, perfect: state.stats.perfect + (stars === 3 ? 1 : 0) }
+  const b = computeBadges({ progress, collected, stats }, state.badges)
+  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill, stats, badges: b.badges, newBadges: b.newBadges }
 }
 
 function reducer(state, action) {
@@ -94,7 +114,7 @@ function reducer(state, action) {
       }
     }
     case 'ANSWER_CORRECT':
-      return { ...state, answered: { correct: true, value: action.value, side: action.side } }
+      return { ...state, answered: { correct: true, value: action.value, side: action.side }, stats: { ...state.stats, correct: state.stats.correct + 1 } }
     case 'ANSWER_WRONG':
       return {
         ...state,
@@ -140,19 +160,19 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, skill: state.skill }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, skill: state.skill, stats: state.stats, badges: state.badges }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.muted, state.skill])
+  }, [state.progress, state.collected, state.muted, state.skill, state.stats, state.badges])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]')
     if (!meta) return
     const cfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
-    const byScreen = { home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2' }
+    const byScreen = { home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2', awards: '#f4ecd6' }
     const color = ['intro', 'play', 'reward'].includes(state.screen) ? (cfg?.tint || PRACTICE_CFG.tint) : byScreen[state.screen] || '#e7dcc4'
     meta.setAttribute('content', color)
   }, [state.screen, state.level, state.pendingLevel, state.practice])
@@ -208,6 +228,8 @@ export default function App() {
     ? LEVELS.slice(Math.max(0, state.level - WORLD_SIZE), state.level).map((l) => l.unlock.emoji)
     : []
   const screenCfg = state.practice ? PRACTICE_CFG : activeCfg
+  const achCtx = achievementCtx({ progress: state.progress, collected: state.collected, stats: state.stats })
+  const newBadgeObjs = state.newBadges.map((id) => ACHIEVEMENTS.find((a) => a.id === id)).filter(Boolean)
 
   return (
     <div className="app-outer">
@@ -273,6 +295,7 @@ export default function App() {
             justNew={state.justNew}
             worldComplete={state.worldComplete}
             worldAnimals={worldAnimals}
+            newBadges={newBadgeObjs}
             hasNext={!state.practice && state.level < LEVELS.length}
             onNext={state.practice ? startPractice : () => openIntro(state.level + 1)}
             onContinue={() => navigate(state.practice ? 'home' : 'map')}
@@ -287,6 +310,10 @@ export default function App() {
             muted={state.muted}
             onNavigate={navigate}
           />
+        )}
+
+        {state.screen === 'awards' && (
+          <AchievementsScreen ctx={achCtx} onNavigate={navigate} />
         )}
       </div>
 

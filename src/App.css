@@ -520,6 +520,22 @@ button.pill { min-height: var(--tap); }
   font-size: clamp(28px, 9cqi, 40px);
 }
 .reward__actions { display: flex; flex-direction: column; gap: var(--s-2); width: 100%; margin-top: var(--s-4); }
+.reward__badges { display: flex; flex-direction: column; gap: var(--s-1); width: 100%; margin-top: var(--s-1); }
+.reward__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-3);
+  background: #fff2c9;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+}
+.reward__badge-icon { font-size: var(--fs-lg); }
 /* Confetti is clipped to its own layer so it never adds scroll height. */
 .confetti-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
 .confetti { position: absolute; top: -6%; }
@@ -559,6 +575,38 @@ button.pill { min-height: var(--tap); }
 .friend--locked .friend__emoji { filter: grayscale(1) opacity(0.5); }
 .friend__name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); color: var(--ink); }
 .friend--locked .friend__name { color: var(--ink-faint); }
+
+/* ---------- Awards ---------- */
+.screen--awards { background: linear-gradient(#f6efdb, #efe4c9); }
+.awards-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.award {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-2);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-wobble);
+  box-shadow: var(--shadow-sm);
+  opacity: 0.85;
+}
+.award--done { background: #fff2c9; opacity: 1; }
+.award__icon { flex: 0 0 auto; font-size: clamp(30px, 10cqi, 42px); line-height: 1; }
+.award__body { flex: 1; min-width: 0; }
+.award__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-md); color: var(--ink); }
+.award__desc { font-size: var(--fs-sm); color: var(--ink-soft); }
+.award__progress { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-1); }
+.award__bar { flex: 1; height: 8px; border: 2px solid var(--ink); border-radius: var(--r-pill); background: var(--surface); overflow: hidden; }
+.award__bar-fill { height: 100%; background: var(--success); }
+.award__count { flex: 0 0 auto; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); color: var(--ink-soft); white-space: nowrap; }
 
 /* ---------- Home ---------- */
 .home {

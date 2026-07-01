@@ -8,7 +8,7 @@ const CHEERS = {
   1: ['You did it, Holly! 💪', 'Nice work — keep on tumbling! 🤸', 'Every champ practices — well done! 🌟'],
 }
 
-export default function RewardScreen({ cfg, levelNum, practice, stars, justNew, worldComplete, worldAnimals, hasNext, onNext, onContinue }) {
+export default function RewardScreen({ cfg, levelNum, practice, stars, justNew, worldComplete, worldAnimals, newBadges = [], hasNext, onNext, onContinue }) {
   const headingRef = useFocusOnMount()
   // Pick cheer + confetti once per reward screen (not on every render).
   const cheer = useMemo(() => {
@@ -71,6 +71,17 @@ export default function RewardScreen({ cfg, levelNum, practice, stars, justNew, 
         {worldComplete && worldAnimals.length > 0 && (
           <div className="reward__world-animals" aria-hidden="true">
             {worldAnimals.map((e, i) => <span key={i}>{e}</span>)}
+          </div>
+        )}
+
+        {newBadges.length > 0 && (
+          <div className="reward__badges">
+            {newBadges.map((b) => (
+              <div key={b.id} className="reward__badge">
+                <span className="reward__badge-icon" aria-hidden="true">{b.icon}</span>
+                <span>New badge — {b.title}!</span>
+              </div>
+            ))}
           </div>
         )}
 
