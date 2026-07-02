@@ -450,6 +450,45 @@ button.pill { min-height: var(--tap); }
 }
 .pattern-tile--q { color: var(--eq-accent); background: var(--tint); font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); }
 
+/* Telling-time clock face + word-choice answers. */
+.clock {
+  position: relative;
+  width: clamp(140px, 46cqi, 200px);
+  height: clamp(140px, 46cqi, 200px);
+  border-radius: 50%;
+  background: var(--surface);
+  border: 5px solid var(--ink);
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+.clock__num { position: absolute; font-family: var(--font-display); font-weight: 800; font-size: var(--fs-md); color: var(--ink); }
+.clock__num--t { top: 8px; left: 50%; transform: translateX(-50%); }
+.clock__num--b { bottom: 8px; left: 50%; transform: translateX(-50%); }
+.clock__num--l { left: 10px; top: 50%; transform: translateY(-50%); }
+.clock__num--r { right: 10px; top: 50%; transform: translateY(-50%); }
+.clock__hand { position: absolute; left: 50%; bottom: 50%; transform-origin: bottom center; border-radius: 4px; }
+.clock__hand--hour { width: 7px; height: 26%; background: var(--ink); }
+.clock__hand--min { width: 5px; height: 37%; background: var(--primary); }
+.clock__center { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: var(--ink); transform: translate(-50%, -50%); }
+
+.time-choices { display: flex; flex-direction: column; gap: var(--s-2); width: 100%; }
+.time-choice {
+  position: relative;
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-4);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  color: var(--ink);
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-wobble);
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+.time-choice[data-state='correct'] { background: var(--correct); }
+.time-choice[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
+.time-choice[data-state='dim'] { opacity: 0.4; }
+.time-choice[data-state='hint'] { border-color: var(--success); animation: hintPulse 1.1s ease-in-out infinite; }
+
 .choices { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: center; width: 100%; }
 .choice {
   position: relative;
@@ -899,7 +938,7 @@ button.pill { min-height: var(--tap); }
 }
 
 /* Win juice: a ring burst on the correct answer. */
-.choice[data-state='correct']::after, .panel[data-state='correct']::after {
+.choice[data-state='correct']::after, .panel[data-state='correct']::after, .time-choice[data-state='correct']::after {
   content: '';
   position: absolute;
   inset: -4px;

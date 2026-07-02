@@ -80,7 +80,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
 
         {hint && !a && <p className="hint-tip" role="status">Tap the glowing one! ✨</p>}
 
-        {isNumberQ && (
+        {(isNumberQ || q.kind === 'clock') && (
           <div className="qcard">
             {q.kind === 'add' && (
               <>
@@ -128,6 +128,18 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
               <div className="pattern-row" aria-hidden="true">
                 {q.seq.map((s, k) => <span key={k} className="pattern-tile">{s}</span>)}
                 <span className="pattern-tile pattern-tile--q">?</span>
+              </div>
+            )}
+
+            {q.kind === 'clock' && (
+              <div className="clock" aria-hidden="true">
+                <span className="clock__num clock__num--t">12</span>
+                <span className="clock__num clock__num--r">3</span>
+                <span className="clock__num clock__num--b">6</span>
+                <span className="clock__num clock__num--l">9</span>
+                <span className="clock__hand clock__hand--hour" style={{ transform: `translateX(-50%) rotate(${q.hourAngle}deg)` }} />
+                <span className="clock__hand clock__hand--min" style={{ transform: `translateX(-50%) rotate(${q.minAngle}deg)` }} />
+                <span className="clock__center" />
               </div>
             )}
           </div>
@@ -182,6 +194,16 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
                 onClick={() => onAnswerCompare(p.side)}
               >
                 <span className="num-big">{p.n}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {q.kind === 'clock' && (
+          <div className="time-choices">
+            {(q.choices || []).map((v) => (
+              <button key={v} type="button" className="time-choice tap" data-state={numState(v)} onClick={() => onAnswer(v)}>
+                {v}
               </button>
             ))}
           </div>

@@ -32,4 +32,8 @@ export const LEVELS = [
   { name: 'Mossy Hollow',     type: 'pattern', colors: 3, unit: 3, scene: 'meadow', animals: ['🦥'], unlock: { emoji: '🦥', name: 'Mossy' },   accent: '#7d9a52', tint: '#e9efd6' },
   { name: 'Otter Creek',      type: 'add',     sumMax: 20, scene: 'water',  animals: ['🦦'], unlock: { emoji: '🦦', name: 'Otto' },    accent: '#5b8fa8', tint: '#dde9ef' },
   { name: 'Prickle Patch',    type: 'bond',    sumMax: 15, scene: 'meadow', animals: ['🦔'], unlock: { emoji: '🦔', name: 'Prickle' }, accent: '#b07a4a', tint: '#efe4d2' },
+  { name: 'Tick-Tock Town',   type: 'clock',   scene: 'sky',    animals: ['🐹'], unlock: { emoji: '🐹', name: 'Nibbles' }, accent: '#c98a3c', tint: '#f6ebd2' },
+  { name: 'Clockwork Cove',   type: 'clock',   half: true, scene: 'meadow', animals: ['🦝'], unlock: { emoji: '🦝', name: 'Bandit' },  accent: '#7a8a7f', tint: '#e7ece8' },
+  { name: 'Sundial Hill',     type: 'add',     sumMax: 20, scene: 'meadow', animals: ['🐿️'], unlock: { emoji: '🐿️', name: 'Nutty' },   accent: '#a9803f', tint: '#efe6cf' },
+  { name: 'Moonlit Glade',    type: 'pattern', colors: 4, unit: 2, scene: 'night',  animals: ['🦇'], unlock: { emoji: '🦇', name: 'Echo' },    accent: '#6a6b9c', tint: '#e4e3f0' },
 ]

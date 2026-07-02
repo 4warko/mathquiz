@@ -75,6 +75,15 @@ function validate(q) {
       assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
       break
     }
+    case 'clock': {
+      assert.ok(q.hour >= 1 && q.hour <= 12, 'hour out of range')
+      assert.ok(q.minute === 0 || q.minute === 30, 'minute must be 0 or 30')
+      assert.equal(typeof q.answer, 'string')
+      assert.equal(q.choices.length, 3)
+      assert.ok(q.choices.includes(q.answer), 'choices must include the answer')
+      assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
+      break
+    }
     default:
       assert.fail(`unknown question kind: ${q.kind}`)
   }

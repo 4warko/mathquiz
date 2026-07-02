@@ -75,6 +75,26 @@ const genOne = (cfg) => {
     return { kind: 'pattern', seq, answer, choices: shuffle([answer, ...distractors]), prompt: 'What comes next?' }
   }
 
+  if (cfg.type === 'clock') {
+    const timeLabel = (h, m) => (m === 30 ? `half past ${h}` : `${h} o'clock`)
+    const hour = rand(1, 12)
+    const minute = cfg.half && rand(0, 1) === 1 ? 30 : 0
+    const answer = timeLabel(hour, minute)
+    const set = new Set([answer])
+    let guard = 0
+    while (set.size < 3 && guard++ < 40) {
+      const h = rand(1, 12)
+      const m = cfg.half && rand(0, 1) === 1 ? 30 : 0
+      set.add(timeLabel(h, m))
+    }
+    return {
+      kind: 'clock', hour, minute, answer, choices: shuffle([...set]),
+      hourAngle: (hour % 12) * 30 + (minute / 60) * 30,
+      minAngle: minute * 6,
+      prompt: 'What time is it?',
+    }
+  }
+
   if (cfg.type === 'ncompare') {
     const { lo, hi } = cfg
     let na = rand(lo, hi)
@@ -154,6 +174,7 @@ export const howToPlay = (cfg) => {
   if (cfg.type === 'bond') return 'How many more do you need to reach the number?'
   if (cfg.type === 'ncompare') return 'Which number is bigger (or smaller)? Tap it!'
   if (cfg.type === 'pattern') return 'Spot the pattern — what comes next?'
+  if (cfg.type === 'clock') return 'Look at the clock — what time is it?'
   return 'Tap the group with more (or fewer)!'
 }
 
