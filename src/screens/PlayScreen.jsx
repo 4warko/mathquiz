@@ -146,7 +146,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
                 <div className="numline__inner">
                   <div className="numline__track" />
                   {Array.from({ length: q.max + 1 }).map((_, k) => (
-                    <span key={k} className="numline__tick" style={{ left: `${(k / q.max) * 100}%` }} />
+                    <span key={k} className={`numline__tick${k % 5 === 0 ? ' numline__tick--major' : ''}`} style={{ left: `${(k / q.max) * 100}%` }} />
                   ))}
                   <span className="numline__pin" style={{ left: `${(q.target / q.max) * 100}%` }} />
                   <span className="numline__end" style={{ left: '0%' }}>0</span>

@@ -503,6 +503,8 @@ button.pill { min-height: var(--tap); }
   border-radius: 2px;
   transform: translateX(-50%);
 }
+/* Anchor ticks every 5 so a dense line (e.g. 0-15) stays readable on a phone. */
+.numline__tick--major { top: 36px; height: 22px; width: 4px; opacity: 0.75; }
 /* CSS caret so the point lands exactly on the target tick. No transform-based
    animation here — it would override translateX(-50%) and drift the pin. */
 .numline__pin {
@@ -511,8 +513,8 @@ button.pill { min-height: var(--tap); }
   width: 0;
   height: 0;
   transform: translateX(-50%);
-  border-left: 11px solid transparent;
-  border-right: 11px solid transparent;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
   border-top: 18px solid var(--primary);
   filter: drop-shadow(0 2px 1px rgba(65, 51, 42, 0.3));
 }
@@ -853,6 +855,9 @@ button.pill { min-height: var(--tap); }
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 2px;
+  /* Fade the right edge to hint there are more decorations to scroll to. */
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
 }
 .decor-prop {
   flex: 0 0 auto;
@@ -927,6 +932,8 @@ button.pill { min-height: var(--tap); }
 }
 .shop-item--worn { background: #fff2c9; }
 .shop-item--locked .shop-item__emoji { filter: grayscale(0.55); opacity: 0.7; }
+/* The 🔒 + grayed emoji already read as "locked", so keep the price legible. */
+.shop-item--locked .btn:disabled { opacity: 1; color: var(--ink-soft); background: var(--surface-2); }
 .shop-item__emoji { font-size: clamp(32px, 12cqi, 46px); line-height: 1; }
 .shop-item__name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); color: var(--ink); text-align: center; }
 
