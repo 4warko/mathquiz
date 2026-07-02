@@ -149,7 +149,7 @@
   background: var(--surface);
   color: var(--ink);
   font-size: var(--fs-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-sm);
 }
 
 .pill {
@@ -165,7 +165,7 @@
   font-family: var(--font-display);
   font-weight: 800;
   font-size: var(--fs-sm);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-sm);
 }
 .pill--star { background: #fff2c9; }
 .pill--friends { background: #d9edc7; }
@@ -185,13 +185,13 @@ button.pill { min-height: var(--tap); }
   font-family: var(--font-display);
   font-weight: 800;
   font-size: var(--fs-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 /* Primary CTA is always the accessible brand orange for a consistent,
    high-contrast action color (per-world accent stays decorative). */
-.btn--primary { background: var(--primary); color: var(--on-primary); }
+.btn--primary { background: linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%), var(--primary); color: var(--on-primary); }
 .btn--block { width: 100%; }
-.btn--lg { padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); box-shadow: var(--shadow-lg); }
+.btn--lg { padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); box-shadow: var(--gloss), var(--shadow-lg); }
 .btn:disabled { opacity: 0.5; box-shadow: var(--shadow-sm); cursor: default; }
 
 /* ---------- Bottom navigation (thumb zone) ---------- */
@@ -246,7 +246,7 @@ button.pill { min-height: var(--tap); }
   border: 4px solid var(--ink);
   border-radius: var(--r-blob);
   background: #ffffff;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--gloss), var(--shadow-lg);
   transition: filter var(--t-fast) ease;
 }
 .node:active:not(:disabled) { filter: brightness(0.96); }
@@ -298,9 +298,12 @@ button.pill { min-height: var(--tap); }
   text-align: center;
 }
 
-/* Companion animal that watches the level and cheers on a correct answer. */
-.buddy { font-size: clamp(38px, 13cqi, 60px); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
+/* Companion animal that watches the level and cheers on a correct answer.
+   Sits on a static ground shadow so its float reads as hovering. */
+.buddy-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); }
+.buddy { font-size: clamp(46px, 16cqi, 72px); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
 .buddy--cheer { animation: cheerBounce 0.6s ease; }
+.buddy__ground { width: 46px; height: 9px; background: rgba(65, 51, 42, 0.16); border-radius: 50%; filter: blur(2px); }
 .play__actions {
   flex: 0 0 auto;
   display: flex;
@@ -406,12 +409,13 @@ button.pill { min-height: var(--tap); }
   background: var(--surface);
   border: 3px solid var(--ink);
   border-radius: var(--r-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-sm);
 }
 .seq-box--q { color: var(--eq-accent); background: var(--tint); }
 
 .choices { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: center; width: 100%; }
 .choice {
+  position: relative;
   min-width: 0;       /* allow shrink so 3 choices stay on one row at 320px */
   flex: 1 1 0;
   max-width: 130px;
@@ -424,7 +428,7 @@ button.pill { min-height: var(--tap); }
   background: var(--surface);
   border: 3px solid var(--ink);
   border-radius: var(--r-wobble);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 .choice[data-state='correct'] { background: var(--correct); transform: scale(1.06); }
 .choice[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
@@ -433,6 +437,7 @@ button.pill { min-height: var(--tap); }
 
 .compare { display: flex; gap: var(--s-3); width: 100%; }
 .panel {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -441,7 +446,7 @@ button.pill { min-height: var(--tap); }
   background: rgba(255, 255, 255, 0.7);
   border: 3px solid var(--ink);
   border-radius: var(--r-wobble-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 .panel[data-state='correct'] { background: var(--correct); transform: scale(1.03); }
 .panel[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
@@ -817,6 +822,57 @@ button.pill { min-height: var(--tap); }
 }
 
 /* ============================================================
+   Per-world scenery + depth (decorative, behind content)
+   ============================================================ */
+.scenery { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.topbar, .play__stage, .play__actions, .intro__card,
+.home__top, .home__actions, .home__menagerie { position: relative; z-index: 1; }
+/* home__settings is already absolute with its own z-index — just lift it above scenery. */
+.home__settings { z-index: 5; }
+
+.scenery::before, .scenery::after { content: ''; position: absolute; }
+.scenery::before { top: -14%; right: -8%; width: 200px; height: 200px; border-radius: 50%; }
+.scenery::after { left: -12%; right: -12%; bottom: -22%; height: 46%; border-radius: 50% 50% 0 0; opacity: 0.5; }
+.scenery--meadow::before { background: radial-gradient(circle, rgba(255, 226, 150, 0.6), rgba(255, 226, 150, 0)); }
+.scenery--meadow::after  { background: #cfe6a6; }
+.scenery--sky::before    { background: radial-gradient(circle, rgba(255, 224, 168, 0.7), rgba(255, 224, 168, 0)); }
+.scenery--sky::after     { background: #f3dfb0; opacity: 0.38; }
+.scenery--water::before  { background: radial-gradient(circle, rgba(180, 224, 245, 0.6), rgba(180, 224, 245, 0)); }
+.scenery--water::after   { background: #bfe0ef; }
+.scenery--night::before  { background: radial-gradient(circle, rgba(240, 232, 180, 0.55), rgba(240, 232, 180, 0)); }
+.scenery--night::after   { background: #c7cbe6; opacity: 0.4; }
+.scenery__decor { position: absolute; font-size: clamp(46px, 22cqi, 92px); opacity: 0.15; animation: drift 9s ease-in-out infinite; }
+.scenery__decor--a { top: 13%; left: 7%; }
+.scenery__decor--b { top: 26%; right: 6%; opacity: 0.12; animation-duration: 12s; animation-direction: reverse; }
+
+/* Soft drop shadow so floating characters read as hovering, not flat. */
+.home__hero, .intro__animal, .reward__animal, .welcome__hero {
+  filter: drop-shadow(0 8px 5px rgba(65, 51, 42, 0.22));
+}
+
+/* Per-world accent ring inside the map nodes. */
+.node::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: inherit;
+  border: 3px solid var(--node-accent, transparent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Win juice: a ring burst on the correct answer. */
+.choice[data-state='correct']::after, .panel[data-state='correct']::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 3px solid var(--success);
+  animation: burst 0.55s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ============================================================
    Keyframes
    ============================================================ */
 @keyframes bob {
@@ -864,4 +920,12 @@ button.pill { min-height: var(--tap); }
   25% { transform: rotate(-8deg) scale(1.1); }
   50% { transform: rotate(7deg) scale(1.14); }
   75% { transform: rotate(-4deg) scale(1.06); }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-14px) rotate(4deg); }
+}
+@keyframes burst {
+  from { transform: scale(0.7); opacity: 0.7; }
+  to { transform: scale(1.5); opacity: 0; }
 }

@@ -1,11 +1,13 @@
 import { howToPlay } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
+import Scenery from '../components/Scenery'
 
 // Quick "here's what's next" step so young players are oriented before a level.
 export default function IntroScreen({ cfg, levelNum, known, onStart, onBack }) {
   const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--intro intro" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
+      <Scenery scene={cfg.scene} />
       <div className="intro__card">
         <div className="intro__label">LEVEL {levelNum}</div>
         <h2 className="intro__world" ref={titleRef} tabIndex={-1}>{cfg.name}</h2>

@@ -1,5 +1,6 @@
 import { emojiSize } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
+import Scenery from '../components/Scenery'
 
 export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, answered, hint, muted, onToggleMute, onBack, onAnswer, onAnswerCompare }) {
   const titleRef = useFocusOnMount()
@@ -30,6 +31,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
 
   return (
     <div className="screen screen--play" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
+      <Scenery scene={cfg.scene} />
       <header className="topbar">
         <button type="button" className="icon-btn tap" aria-label="Back to map" onClick={onBack}>
           <span aria-hidden="true">←</span>
@@ -58,7 +60,10 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
       </header>
 
       <div className="play__stage">
-        <div className={`buddy${a?.correct ? ' buddy--cheer' : ''}`} aria-hidden="true">{cfg.unlock.emoji}</div>
+        <div className="buddy-wrap" aria-hidden="true">
+          <div className={`buddy${a?.correct ? ' buddy--cheer' : ''}`}>{cfg.unlock.emoji}</div>
+          <div className="buddy__ground" />
+        </div>
 
         {/* Persistent live region — reliably announces the result to screen readers. */}
         <div className="sr-only" aria-live="assertive">

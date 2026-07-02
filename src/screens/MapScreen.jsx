@@ -72,7 +72,7 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
                 key={n}
                 type="button"
                 className={cls}
-                style={{ left: `${XS[i % 4]}%`, top: `${TOP + i * STEP}px`, width: NODE, height: NODE }}
+                style={{ left: `${XS[i % 4]}%`, top: `${TOP + i * STEP}px`, width: NODE, height: NODE, '--node-accent': cfg.accent }}
                 disabled={!canPlay}
                 aria-label={label}
                 onClick={canPlay ? () => onStart(n) : undefined}

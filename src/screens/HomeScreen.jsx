@@ -1,9 +1,11 @@
 import useFocusOnMount from '../useFocusOnMount'
+import Scenery from '../components/Scenery'
 
 export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], name = 'Holly', avatar = '🐰', onPlay, onFriends, onPractice, onOpenSettings }) {
   const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--home home">
+      <Scenery scene="sky" />
       <button type="button" className="home__settings icon-btn tap" aria-label="Grown-up settings" onClick={onOpenSettings}>
         <span aria-hidden="true">⚙️</span>
       </button>

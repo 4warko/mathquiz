@@ -17,7 +17,7 @@ import './App.css'
 const STORAGE_KEY = 'holly-math-v1'
 const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
 // Synthetic config for the mixed "Surprise Round" (no real level / animal).
-const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0', unlock: { emoji: '🎲', name: 'Practice' } }
+const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0', scene: 'sky', unlock: { emoji: '🎲', name: 'Practice' } }
 
 function loadSaved() {
   try {

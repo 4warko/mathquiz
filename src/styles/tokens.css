@@ -50,6 +50,7 @@
   --shadow-lg: 3px 5px 0 var(--ink);
   --shadow-pressed: 1px 2px 0 var(--ink);
   --shadow-ambient: 0 18px 60px rgba(65, 51, 42, 0.35);
+  --gloss: inset 0 2px 0 rgba(255, 255, 255, 0.45); /* top highlight → glossy candy feel */
 
   /* — Fluid type: scales with the frame via container-query units — */
   --fs-xxs: clamp(10.5px, 3cqi, 13px);
