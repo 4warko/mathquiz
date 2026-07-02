@@ -3,7 +3,7 @@ import { LEVELS, WORLD_SIZE } from './levels'
 import { genQuestions, genMixed } from './game'
 import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
 import { themeForStars } from './themes'
-import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
+import { playCorrect, playWrong, playFanfare, unlockAudio, startMusic, stopMusic } from './sound'
 import WelcomeScreen from './screens/WelcomeScreen'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
@@ -42,7 +42,7 @@ function loadSaved() {
       return {
         progress,
         collected: Array.isArray(s.collected) ? s.collected.filter(valid) : [],
-        muted: !!s.muted, skill: s.skill || 0,
+        muted: !!s.muted, music: s.music === undefined ? true : !!s.music, skill: s.skill || 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) },
         badges: Array.isArray(s.badges) ? s.badges : [],
         name: s.name || '', avatar: s.avatar || '🐰',
@@ -51,7 +51,7 @@ function loadSaved() {
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], muted: false, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], name: '', avatar: '🐰' }
+  return { progress: {}, collected: [], muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], name: '', avatar: '🐰' }
 }
 
 function init() {
@@ -72,7 +72,8 @@ function init() {
     practice: false,     // is this a mixed "Surprise Round" (not a real level)?
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
-    muted: saved.muted,
+    muted: saved.muted,  // silences all sound effects (quick-access toggle)
+    music: saved.music,  // background music on/off (grown-up settings)
     skill: saved.skill,  // adaptive-difficulty offset, [-2, 3]
     stats: saved.stats,  // { correct, perfect, practiceRounds }
     badges: saved.badges, // unlocked achievement ids
@@ -164,6 +165,8 @@ function reducer(state, action) {
       return finish(state)
     case 'TOGGLE_MUTE':
       return { ...state, muted: !state.muted }
+    case 'TOGGLE_MUSIC':
+      return { ...state, music: !state.music }
     case 'RESET_PROGRESS':
       // Clear everything derived from play so no ghost badge/skill survives.
       return {
@@ -201,6 +204,14 @@ export default function App() {
     return () => window.removeEventListener('pointerdown', unlock)
   }, [])
 
+  // Background music: runs whenever sound is on and music is enabled. The
+  // scheduler stays silent until the AudioContext resumes on first gesture.
+  useEffect(() => {
+    if (!state.muted && state.music) startMusic()
+    else stopMusic()
+    return () => stopMusic()
+  }, [state.muted, state.music])
+
   // Persist progress, collection, and the sound preference whenever they change
   // (skip the first run — it would just rewrite what we loaded).
   const didPersist = useRef(false)
@@ -209,12 +220,12 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, skill: state.skill, stats: state.stats, badges: state.badges, name: state.name, avatar: state.avatar }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, name: state.name, avatar: state.avatar }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.muted, state.skill, state.stats, state.badges, state.name, state.avatar])
+  }, [state.progress, state.collected, state.muted, state.music, state.skill, state.stats, state.badges, state.name, state.avatar])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
@@ -228,7 +239,7 @@ export default function App() {
 
   // Little fanfare when the reward screen appears.
   useEffect(() => {
-    if (state.screen === 'reward' && !state.muted) playFanfare()
+    if (state.screen === 'reward' && !state.muted) playFanfare(state.earnedStars)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.screen])
 
@@ -402,7 +413,9 @@ export default function App() {
       {settingsOpen && (
         <SettingsModal
           muted={state.muted}
+          music={state.music}
           onToggleMute={() => dispatch({ type: 'TOGGLE_MUTE' })}
+          onToggleMusic={() => dispatch({ type: 'TOGGLE_MUSIC' })}
           onReset={() => dispatch({ type: 'RESET_PROGRESS' })}
           onChangeName={() => { setSettingsOpen(false); navigate('welcome') }}
           onClose={() => setSettingsOpen(false)}
