@@ -10,7 +10,7 @@ export default function IntroScreen({ cfg, levelNum, known, onStart, onBack }) {
       <Scenery scene={cfg.scene} />
       <div className="intro__card">
         <div className="intro__label">LEVEL {levelNum}</div>
-        <h2 className="intro__world" ref={titleRef} tabIndex={-1}>{cfg.name}</h2>
+        <h1 className="intro__world" ref={titleRef} tabIndex={-1}>{cfg.name}</h1>
         <div className="intro__animal" aria-hidden="true">{known ? cfg.unlock.emoji : '❓'}</div>
         <p className="intro__how">{howToPlay(cfg)}</p>
         <p className="reward__sub">

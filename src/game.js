@@ -162,7 +162,7 @@ const genOne = (cfg) => {
 const withSkill = (cfg, skill) => {
   const s = Math.max(-2, Math.min(3, skill || 0))
   if (!s) return cfg
-  const bump = (v) => Math.max(4, Math.min(v + 4, v + s))
+  const bump = (v) => Math.max(4, v + s) // s is pre-clamped to [-2, 3]
   switch (cfg.type) {
     case 'add':
     case 'bond':

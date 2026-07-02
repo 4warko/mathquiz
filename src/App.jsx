@@ -23,10 +23,22 @@ const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0
 function loadSaved() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (s) return {
-      progress: s.progress || {}, collected: s.collected || [], muted: !!s.muted, skill: s.skill || 0,
-      stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) }, badges: s.badges || [],
-      name: s.name || '', avatar: s.avatar || '🐰',
+    if (s) {
+      // Guard against saves from an older build with a different level set —
+      // an out-of-range index would later crash on LEVELS[n - 1].unlock.
+      const valid = (n) => Number.isInteger(n) && n >= 1 && n <= LEVELS.length
+      const progress = {}
+      for (const [k, v] of Object.entries(s.progress || {})) {
+        if (valid(Number(k))) progress[Number(k)] = v
+      }
+      return {
+        progress,
+        collected: Array.isArray(s.collected) ? s.collected.filter(valid) : [],
+        muted: !!s.muted, skill: s.skill || 0,
+        stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) },
+        badges: Array.isArray(s.badges) ? s.badges : [],
+        name: s.name || '', avatar: s.avatar || '🐰',
+      }
     }
   } catch {
     /* ignore malformed / unavailable storage */
@@ -142,7 +154,17 @@ function reducer(state, action) {
     case 'TOGGLE_MUTE':
       return { ...state, muted: !state.muted }
     case 'RESET_PROGRESS':
-      return { ...state, progress: {}, collected: [] }
+      // Clear everything derived from play so no ghost badge/skill survives.
+      return {
+        ...state,
+        progress: {},
+        collected: [],
+        skill: 0,
+        stats: { correct: 0, perfect: 0, practiceRounds: 0 },
+        badges: [],
+        newBadges: [],
+        newTheme: null,
+      }
     default:
       return state
   }
@@ -154,7 +176,11 @@ export default function App() {
 
   // dispatch is stable, so deferred callbacks read fresh state without a ref hack.
   const timerRef = useRef(null)
-  const clearTimer = () => { if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null } }
+  const resolvingRef = useRef(false) // synchronous lock: a correct answer resolves exactly once
+  const clearTimer = () => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
+    resolvingRef.current = false
+  }
   useEffect(() => clearTimer, [])
 
   // Prime Web Audio on the first touch so the first sound is reliable on iOS.
@@ -210,9 +236,10 @@ export default function App() {
   const resolve = (isCorrect, payload) => {
     clearTimer()
     if (isCorrect) {
+      resolvingRef.current = true
       dispatch({ type: 'ANSWER_CORRECT', ...payload })
       feedback(true)
-      timerRef.current = setTimeout(() => dispatch({ type: 'ADVANCE' }), 1150)
+      timerRef.current = setTimeout(() => { resolvingRef.current = false; dispatch({ type: 'ADVANCE' }) }, 1150)
     } else {
       dispatch({ type: 'ANSWER_WRONG', ...payload })
       feedback(false)
@@ -222,13 +249,13 @@ export default function App() {
 
   const answer = (value) => {
     const q = state.questions[state.qIndex]
-    if (!q || state.answered?.correct) return
+    if (!q || resolvingRef.current || state.answered?.correct) return
     resolve(value === q.answer, { value })
   }
 
   const answerCompare = (side) => {
     const q = state.questions[state.qIndex]
-    if (!q || state.answered?.correct) return
+    if (!q || resolvingRef.current || state.answered?.correct) return
     resolve(side === q.answerSide, { side })
   }
 
