@@ -28,4 +28,8 @@ export const LEVELS = [
   { name: 'Giraffe Plains',   type: 'seq',     step: 5, multiples: true, scene: 'sky',    animals: ['🦒'], unlock: { emoji: '🦒', name: 'Stretch' }, accent: '#c79a34', tint: '#f6edcf' },
   { name: 'Koala Gum',        type: 'ncompare', lo: 5, hi: 50, wants: ['more', 'fewer'], scene: 'meadow', animals: ['🐨'], unlock: { emoji: '🐨', name: 'Gumnut' },  accent: '#6f8379', tint: '#e7ece8' },
   { name: 'Flamingo Lagoon',  type: 'seq',     step: 10, multiples: true, scene: 'water',  animals: ['🦩'], unlock: { emoji: '🦩', name: 'Rosie' },   accent: '#d96a92', tint: '#f7e2ea' },
+  { name: 'Parrot Cove',      type: 'pattern', colors: 3, unit: 2, scene: 'water',  animals: ['🦜'], unlock: { emoji: '🦜', name: 'Rio' },     accent: '#3fa79a', tint: '#dcefec' },
+  { name: 'Mossy Hollow',     type: 'pattern', colors: 3, unit: 3, scene: 'meadow', animals: ['🦥'], unlock: { emoji: '🦥', name: 'Mossy' },   accent: '#7d9a52', tint: '#e9efd6' },
+  { name: 'Otter Creek',      type: 'add',     sumMax: 20, scene: 'water',  animals: ['🦦'], unlock: { emoji: '🦦', name: 'Otto' },    accent: '#5b8fa8', tint: '#dde9ef' },
+  { name: 'Prickle Patch',    type: 'bond',    sumMax: 15, scene: 'meadow', animals: ['🦔'], unlock: { emoji: '🦔', name: 'Prickle' }, accent: '#b07a4a', tint: '#efe4d2' },
 ]

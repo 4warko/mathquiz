@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { WORLD_SIZE } from '../levels'
 import BottomNav from '../components/BottomNav'
 import useFocusOnMount from '../useFocusOnMount'
 
@@ -54,6 +55,19 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
 
       <div ref={scrollRef} className="scroll">
         <div className="map-canvas" style={{ height: mapHeight }}>
+          {Array.from({ length: Math.ceil(levels.length / WORLD_SIZE) }, (_, w) => {
+            const first = levels[w * WORLD_SIZE]
+            const side = w % 2 === 0 ? { right: '6%' } : { left: '6%' }
+            return (
+              <div
+                key={w}
+                className="map-band"
+                style={{ top: TOP + w * WORLD_SIZE * STEP - STEP * 0.6, height: WORLD_SIZE * STEP, '--band': first.tint }}
+              >
+                <span className="map-band__emoji" style={side} aria-hidden="true">{first.unlock.emoji}</span>
+              </div>
+            )
+          })}
           <div className="trail" aria-hidden="true" />
           {levels.map((cfg, i) => {
             const n = i + 1

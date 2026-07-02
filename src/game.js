@@ -11,6 +11,9 @@ export const shuffle = (arr) => {
   return a
 }
 
+// Shapes used by pattern-matching levels.
+const SHAPES = ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠']
+
 // Build three answer choices: the real answer plus two nearby distractors.
 const makeChoices = (answer) => {
   const set = new Set([answer])
@@ -60,6 +63,16 @@ const genOne = (cfg) => {
     const answer = start + 3 * step
     const prompt = step >= 3 ? `Count by ${step}s — what comes next?` : 'What comes next?'
     return { kind: 'seq', seq, answer, choices: seqChoices(answer, step), prompt }
+  }
+
+  if (cfg.type === 'pattern') {
+    const alpha = shuffle(SHAPES).slice(0, cfg.colors || 3)
+    const unit = alpha.slice(0, cfg.unit || 2)
+    const show = cfg.show || 4
+    const seq = Array.from({ length: show }, (_, i) => unit[i % unit.length])
+    const answer = unit[show % unit.length]
+    const distractors = shuffle(alpha.filter((s) => s !== answer)).slice(0, 2)
+    return { kind: 'pattern', seq, answer, choices: shuffle([answer, ...distractors]), prompt: 'What comes next?' }
   }
 
   if (cfg.type === 'ncompare') {
@@ -140,6 +153,7 @@ export const howToPlay = (cfg) => {
   if (cfg.type === 'seq') return 'Look at the numbers — what comes next?'
   if (cfg.type === 'bond') return 'How many more do you need to reach the number?'
   if (cfg.type === 'ncompare') return 'Which number is bigger (or smaller)? Tap it!'
+  if (cfg.type === 'pattern') return 'Spot the pattern — what comes next?'
   return 'Tap the group with more (or fewer)!'
 }
 

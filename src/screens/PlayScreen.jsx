@@ -27,7 +27,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
     return side === a.side ? 'wrong' : 'idle'
   }
 
-  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond'
+  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond' || q.kind === 'pattern'
 
   return (
     <div className="screen screen--play" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
@@ -61,7 +61,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
 
       <div className="play__stage">
         <div className="buddy-wrap" aria-hidden="true">
-          <div className={`buddy${a?.correct ? ' buddy--cheer' : ''}`}>{cfg.unlock.emoji}</div>
+          <div className={`buddy${a?.correct ? ' buddy--cheer' : a ? ' buddy--oops' : ''}`}>{cfg.unlock.emoji}</div>
           <div className="buddy__ground" />
         </div>
 
@@ -121,6 +121,13 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
               <div className="seq-row">
                 {q.seq.map((n, k) => <span key={k} className="seq-box">{n}</span>)}
                 <span className="seq-box seq-box--q" aria-hidden="true">?</span>
+              </div>
+            )}
+
+            {q.kind === 'pattern' && (
+              <div className="pattern-row" aria-hidden="true">
+                {q.seq.map((s, k) => <span key={k} className="pattern-tile">{s}</span>)}
+                <span className="pattern-tile pattern-tile--q">?</span>
               </div>
             )}
           </div>

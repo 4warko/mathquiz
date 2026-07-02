@@ -5,7 +5,7 @@ import { LEVELS, WORLD_SIZE } from './levels.js'
 export const ACHIEVEMENTS = [
   { id: 'firstFriend', icon: '🐾', title: 'First Friend', desc: 'Meet your first animal', target: 1, value: (c) => c.friends },
   { id: 'crew', icon: '🎊', title: 'Growing Crew', desc: 'Meet 5 animal friends', target: 5, value: (c) => c.friends },
-  { id: 'zookeeper', icon: '🦁', title: 'Zookeeper', desc: 'Meet all 20 friends', target: 20, value: (c) => c.friends },
+  { id: 'zookeeper', icon: '🦁', title: 'Zookeeper', desc: `Meet all ${LEVELS.length} friends`, target: LEVELS.length, value: (c) => c.friends },
   { id: 'perfect1', icon: '⭐', title: 'Perfect!', desc: 'Get 3 stars on a level', target: 1, value: (c) => c.perfect },
   { id: 'perfect10', icon: '🌟', title: 'Perfect Ten', desc: 'Get 3 stars ten times', target: 10, value: (c) => c.perfect },
   { id: 'cruncher', icon: '🔢', title: 'Number Cruncher', desc: 'Answer 50 questions right', target: 50, value: (c) => c.correct },

@@ -231,10 +231,20 @@ button.pill { min-height: var(--tap); }
   top: 20px;
   bottom: 20px;
   left: 50%;
-  width: 0;
-  border-left: 5px dashed #cbb48a;
+  width: 5px;
   transform: translateX(-50%);
+  background-image: repeating-linear-gradient(to bottom, #cbb48a 0 14px, transparent 14px 26px);
+  animation: trailFlow 1.1s linear infinite;
 }
+/* Per-world colour bands so scrolling the trail feels like traveling. */
+.map-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, transparent, var(--band) 22%, var(--band) 78%, transparent);
+  opacity: 0.5;
+}
+.map-band__emoji { position: absolute; top: 38%; font-size: clamp(60px, 28cqi, 120px); opacity: 0.12; }
 .node {
   /* width/height come from the NODE constant in MapScreen (single source). */
   position: absolute;
@@ -253,6 +263,16 @@ button.pill { min-height: var(--tap); }
 .node--done { background: #ffe6a3; }
 .node--locked { background: var(--surface-2); cursor: default; }
 .node--current { animation: bob 1.3s ease-in-out infinite; }
+.node--current::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 4px solid var(--node-accent, var(--primary));
+  opacity: 0.55;
+  animation: nodePulse 1.5s ease-out infinite;
+  pointer-events: none;
+}
 .node__emoji { font-size: 38px; line-height: 1; }
 .node--locked .node__emoji { filter: grayscale(0.7); }
 .node__badge {
@@ -303,6 +323,7 @@ button.pill { min-height: var(--tap); }
 .buddy-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--s-1); }
 .buddy { font-size: clamp(46px, 16cqi, 72px); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
 .buddy--cheer { animation: cheerBounce 0.6s ease; }
+.buddy--oops { animation: shake 0.4s ease; }
 .buddy__ground { width: 46px; height: 9px; background: rgba(65, 51, 42, 0.16); border-radius: 50%; filter: blur(2px); }
 .play__actions {
   flex: 0 0 auto;
@@ -412,6 +433,22 @@ button.pill { min-height: var(--tap); }
   box-shadow: var(--gloss), var(--shadow-sm);
 }
 .seq-box--q { color: var(--eq-accent); background: var(--tint); }
+
+/* Pattern-matching tiles ("what comes next?"). */
+.pattern-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); }
+.pattern-tile {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-md);
+  box-shadow: var(--gloss), var(--shadow-sm);
+}
+.pattern-tile--q { color: var(--eq-accent); background: var(--tint); font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); }
 
 .choices { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: center; width: 100%; }
 .choice {
@@ -928,4 +965,9 @@ button.pill { min-height: var(--tap); }
 @keyframes burst {
   from { transform: scale(0.7); opacity: 0.7; }
   to { transform: scale(1.5); opacity: 0; }
+}
+@keyframes trailFlow { to { background-position: 0 26px; } }
+@keyframes nodePulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.4); opacity: 0; }
 }

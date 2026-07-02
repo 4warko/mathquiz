@@ -67,6 +67,14 @@ function validate(q) {
       assert.equal(q.answerSide, expected, 'answerSide must match want')
       break
     }
+    case 'pattern': {
+      assert.ok(q.seq.length >= 3, 'pattern sequence too short')
+      assert.equal(typeof q.answer, 'string')
+      assert.equal(q.choices.length, 3)
+      assert.ok(q.choices.includes(q.answer), 'choices must include the answer')
+      assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
+      break
+    }
     default:
       assert.fail(`unknown question kind: ${q.kind}`)
   }
