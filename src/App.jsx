@@ -20,6 +20,14 @@ const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
 // Synthetic config for the mixed "Surprise Round" (no real level / animal).
 const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0', scene: 'sky', unlock: { emoji: '🎲', name: 'Practice' } }
 
+// Levels unlock a whole "world" (chunk of WORLD_SIZE) at a time: finishing
+// every level in a world opens the next, and within an open world the child
+// can play the levels in any order.
+const worldOf = (n) => Math.floor((n - 1) / WORLD_SIZE) // 0-based world index for a 1-based level
+const worldLevelNums = (w) =>
+  Array.from({ length: WORLD_SIZE }, (_, i) => w * WORLD_SIZE + i + 1).filter((n) => n <= LEVELS.length)
+const isWorldDone = (progress, w) => worldLevelNums(w).every((n) => progress[n])
+
 function loadSaved() {
   try {
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY))
@@ -98,7 +106,10 @@ function finish(state) {
   // Adaptive: nudge difficulty up after a flawless clear, ease it after a rough one.
   const delta = stars === 3 ? 1 : stars === 1 ? -1 : 0
   const skill = Math.max(-2, Math.min(3, state.skill + delta))
-  const worldComplete = state.level % WORLD_SIZE === 0
+  // Milestone fires when this clear is the one that finishes the whole world
+  // (works no matter which order the levels were played in).
+  const w = worldOf(state.level)
+  const worldComplete = !isWorldDone(state.progress, w) && isWorldDone(progress, w)
   const stats = { ...state.stats, perfect: state.stats.perfect + (stars === 3 ? 1 : 0) }
   const b = computeBadges({ progress, collected, stats }, state.badges)
   const newStars = Object.values(progress).reduce((a, b) => a + b, 0)
@@ -221,7 +232,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.screen])
 
-  const playable = (n) => n === 1 || !!state.progress[n - 1]
+  // A level is playable if it's in the first world, or the previous world is
+  // fully complete — so an open world exposes all of its levels at once.
+  const playable = (n) => { const w = worldOf(n); return w === 0 || isWorldDone(state.progress, w - 1) }
+  // The next level to nudge toward on the reward screen: prefer the next
+  // higher-numbered open+unfinished level, wrapping back to earlier gaps.
+  const nextLevel = () => {
+    const order = []
+    for (let n = state.level + 1; n <= LEVELS.length; n++) order.push(n)
+    for (let n = 1; n <= state.level; n++) order.push(n)
+    return order.find((n) => playable(n) && !state.progress[n]) ?? null
+  }
   const navigate = (screen) => { clearTimer(); dispatch({ type: 'NAVIGATE', screen }) }
   const openIntro = (n) => { if (playable(n)) dispatch({ type: 'OPEN_INTRO', n }) }
   const startLevel = () => { clearTimer(); dispatch({ type: 'START_LEVEL' }) }
@@ -264,8 +285,9 @@ export default function App() {
   const activeCfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
   const collectedAnimals = state.collected.map((n) => LEVELS[n - 1].unlock.emoji)
   const worldAnimals = state.worldComplete
-    ? LEVELS.slice(Math.max(0, state.level - WORLD_SIZE), state.level).map((l) => l.unlock.emoji)
+    ? LEVELS.slice(worldOf(state.level) * WORLD_SIZE, worldOf(state.level) * WORLD_SIZE + WORLD_SIZE).map((l) => l.unlock.emoji)
     : []
+  const nextLevelNum = state.practice ? null : nextLevel()
   const screenCfg = state.practice ? PRACTICE_CFG : activeCfg
   const achCtx = achievementCtx({ progress: state.progress, collected: state.collected, stats: state.stats })
   const newBadgeObjs = state.newBadges.map((id) => ACHIEVEMENTS.find((a) => a.id === id)).filter(Boolean)
@@ -350,8 +372,8 @@ export default function App() {
             worldComplete={state.worldComplete}
             worldAnimals={worldAnimals}
             newBadges={newBadgeObjs}
-            hasNext={!state.practice && state.level < LEVELS.length}
-            onNext={state.practice ? startPractice : () => openIntro(state.level + 1)}
+            hasNext={nextLevelNum !== null}
+            onNext={state.practice ? startPractice : () => openIntro(nextLevelNum)}
             onContinue={() => navigate(state.practice ? 'home' : 'map')}
           />
         )}

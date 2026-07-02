@@ -1052,6 +1052,9 @@ button.pill { min-height: var(--tap); }
   opacity: 0.5;
   pointer-events: none;
 }
+/* Every level in an open chunk shows a fuller ring so the whole unlocked
+   world reads as "ready to play", not just the one pulsing node. */
+.node--open::before { opacity: 0.9; }
 
 /* Win juice: a ring burst on the correct answer. */
 .choice[data-state='correct']::after, .panel[data-state='correct']::after, .time-choice[data-state='correct']::after {

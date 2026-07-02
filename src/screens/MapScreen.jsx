@@ -23,7 +23,7 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
     // Center on the first playable-but-uncompleted level.
     let cur = levels.length
     for (let n = 1; n <= levels.length; n++) {
-      if ((n === 1 || progress[n - 1]) && !progress[n]) { cur = n; break }
+      if (playable(n) && !progress[n]) { cur = n; break }
     }
     const y = TOP + (cur - 1) * STEP
     el.scrollTop = Math.max(0, y - CENTER)
@@ -32,6 +32,13 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
   }, [])
 
   const mapHeight = TOP + (levels.length - 1) * STEP + PAD
+
+  // With a whole world open at once, pulse only the first open+unfinished level
+  // as a gentle "start here" — the rest stay clearly tappable but calm.
+  let firstOpen = 0
+  for (let n = 1; n <= levels.length; n++) {
+    if (playable(n) && !progress[n]) { firstOpen = n; break }
+  }
 
   return (
     <div className="screen screen--map">
@@ -73,11 +80,13 @@ export default function MapScreen({ levels, progress, playable, totalStars, frie
             const n = i + 1
             const completed = !!progress[n]
             const canPlay = playable(n)
-            const isCurrent = canPlay && !completed
+            const isCurrent = n === firstOpen
+            const isOpen = canPlay && !completed
             const cls = [
               'node',
               completed ? 'node--done' : '',
               !canPlay ? 'node--locked' : '',
+              isOpen ? 'node--open' : '',
               isCurrent ? 'node--current' : '',
             ].filter(Boolean).join(' ')
             const label = canPlay ? `Level ${n}: ${cfg.name}${completed ? `, ${progress[n]} stars` : ''}` : `Level ${n} locked`
