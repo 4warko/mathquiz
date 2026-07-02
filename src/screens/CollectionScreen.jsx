@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import Scenery from '../components/Scenery'
 import useFocusOnMount from '../useFocusOnMount'
-import { playPop, speak } from '../sound'
+import { playPop } from '../sound'
 import { FACTS } from '../facts'
 
 export default function CollectionScreen({ levels, collected, friendsCount, muted, onNavigate }) {
@@ -13,13 +13,13 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
   const timerRef = useRef(null)
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
 
-  // Tap a friend to learn (and hear) a fun fact and make it wiggle.
+  // Tap a friend to learn a fun fact and make it wiggle.
   const sayHi = (cfg) => {
     const name = cfg.unlock.name
     const text = FACTS[name] || ''
     setFact({ name, emoji: cfg.unlock.emoji, text })
     setPopping(name)
-    if (!muted) { playPop(); speak(`${name}. ${text}`) }
+    if (!muted) playPop()
     if (navigator.vibrate) navigator.vibrate(18)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setPopping(null), 700)

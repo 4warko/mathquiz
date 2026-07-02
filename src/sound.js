@@ -70,20 +70,6 @@ export function playWrong() {
   blip(c, 254, t + 0.12, 0.18, 'sine', 0.14)
 }
 
-// Read a short line aloud (used for animal fun facts). Caller checks mute.
-export function speak(text) {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return
-  try {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.rate = 0.95
-    u.pitch = 1.1
-    window.speechSynthesis.speak(u)
-  } catch {
-    /* ignore */
-  }
-}
-
 // A cheerful arpeggio when a level is complete.
 export function playFanfare() {
   const c = getCtx()
