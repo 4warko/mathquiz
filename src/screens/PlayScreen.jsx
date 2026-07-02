@@ -147,7 +147,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
       </div>
 
       <div className="play__actions">
-        {isNumberQ && (
+        {(isNumberQ || q.kind === 'shape') && (
           <div className="choices">
             {(q.choices || []).map((v) => (
               <button key={v} type="button" className="choice tap" data-state={numState(v)} onClick={() => onAnswer(v)}>

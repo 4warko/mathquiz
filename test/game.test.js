@@ -84,6 +84,14 @@ function validate(q) {
       assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
       break
     }
+    case 'shape': {
+      assert.equal(typeof q.shapeName, 'string')
+      assert.equal(typeof q.answer, 'string')
+      assert.equal(q.choices.length, 3)
+      assert.ok(q.choices.includes(q.answer), 'choices must include the answer')
+      assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
+      break
+    }
     default:
       assert.fail(`unknown question kind: ${q.kind}`)
   }

@@ -36,4 +36,8 @@ export const LEVELS = [
   { name: 'Clockwork Cove',   type: 'clock',   half: true, scene: 'meadow', animals: ['🦝'], unlock: { emoji: '🦝', name: 'Bandit' },  accent: '#7a8a7f', tint: '#e7ece8' },
   { name: 'Sundial Hill',     type: 'add',     sumMax: 20, scene: 'meadow', animals: ['🐿️'], unlock: { emoji: '🐿️', name: 'Nutty' },   accent: '#a9803f', tint: '#efe6cf' },
   { name: 'Moonlit Glade',    type: 'pattern', colors: 4, unit: 2, scene: 'night',  animals: ['🦇'], unlock: { emoji: '🦇', name: 'Echo' },    accent: '#6a6b9c', tint: '#e4e3f0' },
+  { name: 'Shape Studio',     type: 'shape',   scene: 'meadow', animals: ['🦋'], unlock: { emoji: '🦋', name: 'Flutter' }, accent: '#6a8fbf', tint: '#e4ecf5' },
+  { name: 'Puzzle Park',      type: 'shape',   scene: 'sky',    animals: ['🐞'], unlock: { emoji: '🐞', name: 'Dot' },     accent: '#c9503f', tint: '#f6e0da' },
+  { name: 'Building Blocks',  type: 'bond',    sumMax: 15, scene: 'meadow', animals: ['🐌'], unlock: { emoji: '🐌', name: 'Gary' },    accent: '#8a8a4a', tint: '#eeeed6' },
+  { name: 'Art Corner',       type: 'pattern', colors: 4, unit: 3, scene: 'sky',    animals: ['🦎'], unlock: { emoji: '🦎', name: 'Gecko' },   accent: '#5fa36a', tint: '#dff0e1' },
 ]

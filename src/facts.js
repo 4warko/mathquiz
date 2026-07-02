@@ -28,4 +28,8 @@ export const FACTS = {
   Bandit: 'Raccoons like to wash their food before they eat!',
   Nutty: 'Squirrels hide thousands of nuts for the winter!',
   Echo: 'Bats can “see” in the dark using sound!',
+  Flutter: 'Butterflies taste with their feet!',
+  Dot: 'Ladybugs can have different numbers of spots!',
+  Gary: 'Snails carry their homes on their backs!',
+  Gecko: 'Geckos can walk straight up walls!',
 }

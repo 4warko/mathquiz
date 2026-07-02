@@ -14,6 +14,16 @@ export const shuffle = (arr) => {
 // Shapes used by pattern-matching levels.
 const SHAPES = ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠']
 
+// Named shapes for the shape-recognition levels.
+const SHAPE_SET = [
+  { emoji: '🔺', name: 'triangle' },
+  { emoji: '🟦', name: 'square' },
+  { emoji: '🔵', name: 'circle' },
+  { emoji: '⭐', name: 'star' },
+  { emoji: '❤️', name: 'heart' },
+  { emoji: '🔶', name: 'diamond' },
+]
+
 // Build three answer choices: the real answer plus two nearby distractors.
 const makeChoices = (answer) => {
   const set = new Set([answer])
@@ -92,6 +102,16 @@ const genOne = (cfg) => {
       hourAngle: (hour % 12) * 30 + (minute / 60) * 30,
       minAngle: minute * 6,
       prompt: 'What time is it?',
+    }
+  }
+
+  if (cfg.type === 'shape') {
+    const picks = shuffle(SHAPE_SET).slice(0, 3)
+    const target = picks[rand(0, picks.length - 1)]
+    return {
+      kind: 'shape', answer: target.emoji, shapeName: target.name,
+      choices: shuffle(picks.map((p) => p.emoji)),
+      prompt: `Tap the ${target.name}!`,
     }
   }
 
@@ -175,6 +195,7 @@ export const howToPlay = (cfg) => {
   if (cfg.type === 'ncompare') return 'Which number is bigger (or smaller)? Tap it!'
   if (cfg.type === 'pattern') return 'Spot the pattern — what comes next?'
   if (cfg.type === 'clock') return 'Look at the clock — what time is it?'
+  if (cfg.type === 'shape') return 'Find the shape and tap it!'
   return 'Tap the group with more (or fewer)!'
 }
 
