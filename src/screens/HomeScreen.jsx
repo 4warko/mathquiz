@@ -1,5 +1,6 @@
 import useFocusOnMount from '../useFocusOnMount'
 import Scenery from '../components/Scenery'
+import { hatOffset } from '../shop'
 
 export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], name = 'Holly', avatar = '🐰', hat = null, onPlay, onFriends, onPractice, onShop, onOpenSettings }) {
   const titleRef = useFocusOnMount()
@@ -13,7 +14,7 @@ export default function HomeScreen({ totalStars, friendsCount, collectedAnimals 
       <div className="home__top">
         <div className="home__hero" aria-hidden="true">
           <span className="avatar-emoji">{avatar}</span>
-          {hat && <span className="avatar-hat">{hat}</span>}
+          {hat && <span className="avatar-hat" style={{ top: hatOffset(avatar) }}>{hat}</span>}
         </div>
         <h1 className="home__title" ref={titleRef} tabIndex={-1}>{`${name}'s Animal Math`}</h1>
         <p className="home__sub">Let&apos;s practice counting and meet new animal friends!</p>

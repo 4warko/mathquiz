@@ -1,9 +1,11 @@
 import BottomNav from '../components/BottomNav'
 import useFocusOnMount from '../useFocusOnMount'
-import { HATS, hatEmoji } from '../shop'
+import { HATS, hatEmoji, hatOffset } from '../shop'
 
 export default function ShopScreen({ wallet = 0, avatar = '🐰', hat = null, owned = [], onBuy, onEquip, onNavigate }) {
   const titleRef = useFocusOnMount()
+  const unownedCosts = HATS.filter((h) => !owned.includes(h.id)).map((h) => h.cost)
+  const needMore = unownedCosts.length > 0 && wallet < Math.min(...unownedCosts)
 
   return (
     <div className="screen screen--shop">
@@ -23,9 +25,10 @@ export default function ShopScreen({ wallet = 0, avatar = '🐰', hat = null, ow
       <div className="shop-preview">
         <div className="shop-preview__buddy" aria-hidden="true">
           <span className="avatar-emoji">{avatar}</span>
-          {hat && <span className="avatar-hat">{hatEmoji(hat)}</span>}
+          {hat && <span className="avatar-hat" style={{ top: hatOffset(avatar) }}>{hatEmoji(hat)}</span>}
         </div>
         <p className="shop-preview__label">{hat ? 'Looking good!' : 'Pick a hat for your buddy!'}</p>
+        {needMore && <p className="shop-preview__hint">Play levels to earn ⭐ for more hats!</p>}
         {hat && (
           <button type="button" className="btn btn--sm tap" onClick={() => onEquip(null)}>
             Take off hat
@@ -38,8 +41,9 @@ export default function ShopScreen({ wallet = 0, avatar = '🐰', hat = null, ow
           const isOwned = owned.includes(h.id)
           const isWorn = hat === h.id
           const afford = wallet >= h.cost
+          const locked = !isOwned && !afford
           return (
-            <div key={h.id} className={`shop-item${isWorn ? ' shop-item--worn' : ''}`}>
+            <div key={h.id} className={`shop-item${isWorn ? ' shop-item--worn' : ''}${locked ? ' shop-item--locked' : ''}`}>
               <div className="shop-item__emoji" aria-hidden="true">{h.emoji}</div>
               <div className="shop-item__name">{h.name}</div>
               {isOwned ? (
@@ -56,10 +60,10 @@ export default function ShopScreen({ wallet = 0, avatar = '🐰', hat = null, ow
                   type="button"
                   className="btn btn--sm btn--block tap"
                   disabled={!afford}
-                  aria-label={afford ? `Buy ${h.name} for ${h.cost} stars` : `${h.name} needs ${h.cost} stars`}
+                  aria-label={afford ? `Buy ${h.name} for ${h.cost} stars` : `${h.name} is locked — needs ${h.cost} stars`}
                   onClick={() => onBuy(h.id, h.cost)}
                 >
-                  <span aria-hidden="true">⭐</span> {h.cost}
+                  <span aria-hidden="true">{locked ? '🔒' : '⭐'}</span> {h.cost}
                 </button>
               )}
             </div>

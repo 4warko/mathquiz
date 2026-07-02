@@ -898,6 +898,7 @@ button.pill { min-height: var(--tap); }
   animation: floaty 2.6s ease-in-out infinite;
 }
 .shop-preview__label { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-md); color: var(--ink); }
+.shop-preview__hint { font-size: var(--fs-sm); color: var(--ink-soft); text-align: center; }
 .shop-grid {
   flex: 1;
   overflow-y: auto;
@@ -920,6 +921,7 @@ button.pill { min-height: var(--tap); }
   box-shadow: var(--shadow-sm);
 }
 .shop-item--worn { background: #fff2c9; }
+.shop-item--locked .shop-item__emoji { filter: grayscale(0.55); opacity: 0.7; }
 .shop-item__emoji { font-size: clamp(32px, 12cqi, 46px); line-height: 1; }
 .shop-item__name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); color: var(--ink); text-align: center; }
 

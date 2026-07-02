@@ -14,3 +14,8 @@ export const HATS = [
 
 // The emoji for an equipped hat id (null if none / unknown).
 export const hatEmoji = (id) => HATS.find((h) => h.id === id)?.emoji || null
+
+// Per-avatar vertical offset so a worn hat sits on each buddy's head — the six
+// avatar emoji have differently-placed heads (tall ears, horn, wide ears).
+const HAT_TOP = { '🐰': '-0.10em', '🐱': '-0.05em', '🐶': '-0.01em', '🦄': '0.03em', '🦊': '-0.05em', '🐨': '0em' }
+export const hatOffset = (avatar) => HAT_TOP[avatar] || '-0.05em'

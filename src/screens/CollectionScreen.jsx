@@ -8,6 +8,8 @@ import { FACTS } from '../facts'
 // Decorations the child can place in their clubhouse (emoji — no assets).
 const PROPS = ['🌳', '🌲', '🌸', '🌻', '🌷', '🍄', '🪨', '🌈', '🎈', '☁️', '⛲', '🏰']
 const MAX_DECOR = 40
+// Preset drop spots for the keyboard/AT "Place" path (cycled by count).
+const SPOTS = [[30, 38], [58, 32], [45, 58], [72, 46], [26, 56], [62, 66], [40, 26], [78, 32], [52, 46], [34, 70]]
 
 export default function CollectionScreen({ levels, collected, friendsCount, muted, decor = [], onSetDecor, onNavigate }) {
   const titleRef = useFocusOnMount()
@@ -16,6 +18,7 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
   const [fact, setFact] = useState(null)
   const [decorating, setDecorating] = useState(false)
   const [armed, setArmed] = useState(null) // emoji currently picked up, ready to drop
+  const [confirmClear, setConfirmClear] = useState(false)
   const timerRef = useRef(null)
   const sceneRef = useRef(null)
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
@@ -43,8 +46,15 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
     if (!muted) playPop()
     onSetDecor([...decor, { id, emoji: armed, x, y }])
   }
+  // Keyboard/AT-friendly placement: drop the armed prop at a preset spot.
+  const placePreset = () => {
+    if (!armed || decor.length >= MAX_DECOR) return
+    const [x, y] = SPOTS[decor.length % SPOTS.length]
+    if (!muted) playPop()
+    onSetDecor([...decor, { id: `${Date.now()}-${decor.length}-${x}-${y}`, emoji: armed, x, y }])
+  }
   const removeDecor = (id) => onSetDecor(decor.filter((d) => d.id !== id))
-  const stopDecorating = () => { setDecorating(false); setArmed(null) }
+  const stopDecorating = () => { setDecorating(false); setArmed(null); setConfirmClear(false) }
 
   const collectedCfgs = levels.filter((_, i) => collected.includes(i + 1))
 
@@ -108,7 +118,13 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
         </div>
       ) : (
         <div className={`clubhouse${decorating ? ' clubhouse--edit' : ''}`}>
-          <div className="clubhouse__scene" ref={sceneRef} onClick={decorating ? placeAt : undefined}>
+          <div
+            className="clubhouse__scene"
+            ref={sceneRef}
+            role={decorating ? 'group' : undefined}
+            aria-label={decorating ? 'Your yard — tap to place the picked decoration' : undefined}
+            onClick={decorating ? placeAt : undefined}
+          >
             <Scenery scene="meadow" />
 
             {decor.map((d) => (
@@ -150,7 +166,7 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
           {decorating ? (
             <div className="decor-tray">
               <p className="decor-tray__hint">
-                {armed ? 'Now tap your yard to place it! Tap a decoration to remove it.' : 'Pick a decoration to add.'}
+                {armed ? 'Tap your yard to place it (or use Place). Tap a decoration to remove it.' : 'Pick a decoration to add.'}
               </p>
               <div className="decor-tray__props">
                 {PROPS.map((p) => (
@@ -166,14 +182,36 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
                   </button>
                 ))}
               </div>
-              <div className="decor-tray__actions">
-                <button type="button" className="btn btn--block tap" disabled={decor.length === 0} onClick={() => onSetDecor([])}>
-                  <span aria-hidden="true">🧹</span> Clear
+              {armed && (
+                <button
+                  type="button"
+                  className="btn btn--sm btn--block tap"
+                  aria-label="Place the picked decoration in your yard"
+                  disabled={decor.length >= MAX_DECOR}
+                  onClick={placePreset}
+                >
+                  <span aria-hidden="true">➕</span> Place {armed} in yard
                 </button>
-                <button type="button" className="btn btn--primary btn--block tap" onClick={stopDecorating}>
-                  Done
-                </button>
-              </div>
+              )}
+              {confirmClear ? (
+                <div className="decor-tray__actions">
+                  <button type="button" className="btn btn--block tap" onClick={() => setConfirmClear(false)}>
+                    Keep them
+                  </button>
+                  <button type="button" className="btn btn--danger btn--block tap" onClick={() => { onSetDecor([]); setConfirmClear(false) }}>
+                    Clear all
+                  </button>
+                </div>
+              ) : (
+                <div className="decor-tray__actions">
+                  <button type="button" className="btn btn--block tap" disabled={decor.length === 0} onClick={() => setConfirmClear(true)}>
+                    <span aria-hidden="true">🧹</span> Clear
+                  </button>
+                  <button type="button" className="btn btn--primary btn--block tap" onClick={stopDecorating}>
+                    Done
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="decor-bar">

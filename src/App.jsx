@@ -4,6 +4,7 @@ import { genQuestions, genMixed } from './game'
 import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
 import { themeForStars } from './themes'
 import { HATS, hatEmoji } from './shop'
+import { sumStars, starsForWrong, worldOf, isPlayable, nextPlayableLevel, worldJustCompleted, walletOf, canBuyHat } from './progress'
 import { playCorrect, playWrong, playFanfare, playPop, unlockAudio, startMusic, stopMusic } from './sound'
 import WelcomeScreen from './screens/WelcomeScreen'
 import HomeScreen from './screens/HomeScreen'
@@ -22,13 +23,6 @@ const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
 // Synthetic config for the mixed "Surprise Round" (no real level / animal).
 const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0', scene: 'sky', unlock: { emoji: '🎲', name: 'Practice' } }
 
-// Levels unlock a whole "world" (chunk of WORLD_SIZE) at a time: finishing
-// every level in a world opens the next, and within an open world the child
-// can play the levels in any order.
-const worldOf = (n) => Math.floor((n - 1) / WORLD_SIZE) // 0-based world index for a 1-based level
-const worldLevelNums = (w) =>
-  Array.from({ length: WORLD_SIZE }, (_, i) => w * WORLD_SIZE + i + 1).filter((n) => n <= LEVELS.length)
-const isWorldDone = (progress, w) => worldLevelNums(w).every((n) => progress[n])
 
 function loadSaved() {
   try {
@@ -108,14 +102,14 @@ function computeBadges(input, prevBadges) {
 
 // Compute stars, persist the unlock, and move to the reward screen.
 function finish(state) {
-  const stars = state.wrongCount === 0 ? 3 : state.wrongCount <= 2 ? 2 : 1
+  const stars = starsForWrong(state.wrongCount)
   // Practice doesn't unlock animals, touch progress, or change skill.
   if (state.practice) {
     const stats = { ...state.stats, practiceRounds: state.stats.practiceRounds + 1 }
     const b = computeBadges({ progress: state.progress, collected: state.collected, stats }, state.badges)
     return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false, stats, badges: b.badges, newBadges: b.newBadges, newTheme: null }
   }
-  const prevStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
+  const prevStars = sumStars(state.progress)
   const prev = state.progress[state.level] || 0
   const isNew = !state.collected.includes(state.level)
   const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
@@ -125,11 +119,10 @@ function finish(state) {
   const skill = Math.max(-2, Math.min(3, state.skill + delta))
   // Milestone fires when this clear is the one that finishes the whole world
   // (works no matter which order the levels were played in).
-  const w = worldOf(state.level)
-  const worldComplete = !isWorldDone(state.progress, w) && isWorldDone(progress, w)
+  const worldComplete = worldJustCompleted(state.progress, progress, state.level)
   const stats = { ...state.stats, perfect: state.stats.perfect + (stars === 3 ? 1 : 0) }
   const b = computeBadges({ progress, collected, stats }, state.badges)
-  const newStars = Object.values(progress).reduce((a, b) => a + b, 0)
+  const newStars = sumStars(progress)
   const newTheme = themeForStars(prevStars).id !== themeForStars(newStars).id ? themeForStars(newStars).label : null
   return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill, stats, badges: b.badges, newBadges: b.newBadges, newTheme }
 }
@@ -186,10 +179,8 @@ function reducer(state, action) {
     case 'SET_DECOR':
       return { ...state, decor: action.decor }
     case 'BUY_HAT': {
+      if (!canBuyHat(state.progress, state.spent, state.hats, action.id)) return state
       const item = HATS.find((h) => h.id === action.id)
-      if (!item || state.hats.includes(item.id)) return state
-      const wallet = Object.values(state.progress).reduce((a, b) => a + b, 0) - state.spent
-      if (wallet < item.cost) return state
       return { ...state, spent: state.spent + item.cost, hats: [...state.hats, item.id], hat: item.id }
     }
     case 'EQUIP_HAT':
@@ -274,24 +265,14 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.screen])
 
-  // A level is playable if it's in the first world, or the previous world is
-  // fully complete — so an open world exposes all of its levels at once.
-  const playable = (n) => { const w = worldOf(n); return w === 0 || isWorldDone(state.progress, w - 1) }
-  // The next level to nudge toward on the reward screen: prefer the next
-  // higher-numbered open+unfinished level, wrapping back to earlier gaps.
-  const nextLevel = () => {
-    const order = []
-    for (let n = state.level + 1; n <= LEVELS.length; n++) order.push(n)
-    for (let n = 1; n <= state.level; n++) order.push(n)
-    return order.find((n) => playable(n) && !state.progress[n]) ?? null
-  }
+  // An open world exposes all of its levels at once (see progress.js).
+  const playable = (n) => isPlayable(state.progress, n)
   const navigate = (screen) => { clearTimer(); dispatch({ type: 'NAVIGATE', screen }) }
   const openIntro = (n) => { if (playable(n)) dispatch({ type: 'OPEN_INTRO', n }) }
   const startLevel = () => { clearTimer(); dispatch({ type: 'START_LEVEL' }) }
   const startPractice = () => { clearTimer(); dispatch({ type: 'START_PRACTICE' }) }
   const buyHat = (id, cost) => {
-    const wallet = Object.values(state.progress).reduce((a, b) => a + b, 0) - state.spent
-    if (wallet >= cost && !state.muted) playCorrect()
+    if (walletOf(state.progress, state.spent) >= cost && !state.muted) playCorrect()
     dispatch({ type: 'BUY_HAT', id, cost })
   }
   const equipHat = (id) => { if (!state.muted) playPop(); dispatch({ type: 'EQUIP_HAT', id }) }
@@ -328,8 +309,8 @@ export default function App() {
     resolve(side === q.answerSide, { side })
   }
 
-  const totalStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
-  const wallet = Math.max(0, totalStars - state.spent) // spendable stars (earned never drops)
+  const totalStars = sumStars(state.progress)
+  const wallet = walletOf(state.progress, state.spent) // spendable stars (earned never drops)
   const equippedHat = hatEmoji(state.hat)
   const friendsCount = state.collected.length
   const activeCfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
@@ -337,7 +318,7 @@ export default function App() {
   const worldAnimals = state.worldComplete
     ? LEVELS.slice(worldOf(state.level) * WORLD_SIZE, worldOf(state.level) * WORLD_SIZE + WORLD_SIZE).map((l) => l.unlock.emoji)
     : []
-  const nextLevelNum = state.practice ? null : nextLevel()
+  const nextLevelNum = state.practice ? null : nextPlayableLevel(state.progress, state.level)
   const screenCfg = state.practice ? PRACTICE_CFG : activeCfg
   const achCtx = achievementCtx({ progress: state.progress, collected: state.collected, stats: state.stats })
   const newBadgeObjs = state.newBadges.map((id) => ACHIEVEMENTS.find((a) => a.id === id)).filter(Boolean)
