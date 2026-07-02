@@ -753,11 +753,15 @@ button.pill { min-height: var(--tap); }
 }
 .coll-fact__emoji { flex: 0 0 auto; font-size: var(--fs-xl); line-height: 1; }
 .coll-fact__hint { color: var(--ink-soft); }
-.clubhouse { position: relative; flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+.clubhouse { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+/* The scene is the placement surface: scenery behind, decorations, then the
+   floating friends on top (so taps hit friends in view mode). */
+.clubhouse__scene { position: relative; flex: 1; overflow: hidden; }
+.clubhouse--edit .clubhouse__scene { cursor: copy; }
 .clubhouse__yard {
-  position: relative;
-  z-index: 1;
-  min-height: 100%;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-content: center;
@@ -772,7 +776,73 @@ button.pill { min-height: var(--tap); }
   filter: drop-shadow(0 6px 4px rgba(65, 51, 42, 0.2));
 }
 .clubhouse__pal.is-pop { animation: wiggle 0.6s ease; }
+/* While decorating, friends stop intercepting taps so the whole yard places. */
+.clubhouse--edit .clubhouse__pal { pointer-events: none; opacity: 0.85; }
 .clubhouse__empty { color: var(--ink-soft); text-align: center; max-width: 260px; }
+
+/* Placed decorations. Inert in view mode; removable (tap) in edit mode. */
+.clubhouse__prop {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  font-size: clamp(30px, 12cqi, 52px);
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 3px rgba(65, 51, 42, 0.18));
+}
+.clubhouse--edit .clubhouse__prop {
+  z-index: 3;
+  pointer-events: auto;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  outline: 2px dashed rgba(65, 51, 42, 0.5);
+}
+.clubhouse--edit .clubhouse__prop:active { transform: translate(-50%, -50%) scale(0.9); }
+
+/* Decorate tray + entry bar. */
+.decor-bar {
+  flex: 0 0 auto;
+  padding: var(--s-3) var(--s-5) var(--s-4);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border-top: 3px solid var(--ink);
+}
+.decor-tray {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border-top: 3px solid var(--ink);
+}
+.decor-tray__hint { text-align: center; font-size: var(--fs-sm); color: var(--ink-soft); min-height: 1.4em; }
+.decor-tray__props {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+.decor-prop {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  background: var(--surface);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r-md);
+  box-shadow: var(--gloss), var(--shadow-sm);
+}
+.decor-prop.is-armed { background: #fff2c9; transform: scale(1.08); box-shadow: var(--gloss), var(--shadow-md); }
+.decor-tray__actions { display: flex; gap: var(--s-2); }
 
 /* ---------- Awards ---------- */
 .screen--awards { background: linear-gradient(#f6efdb, #efe4c9); }

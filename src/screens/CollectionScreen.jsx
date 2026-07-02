@@ -5,12 +5,19 @@ import useFocusOnMount from '../useFocusOnMount'
 import { playPop } from '../sound'
 import { FACTS } from '../facts'
 
-export default function CollectionScreen({ levels, collected, friendsCount, muted, onNavigate }) {
+// Decorations the child can place in their clubhouse (emoji — no assets).
+const PROPS = ['🌳', '🌲', '🌸', '🌻', '🌷', '🍄', '🪨', '🌈', '🎈', '☁️', '⛲', '🏰']
+const MAX_DECOR = 40
+
+export default function CollectionScreen({ levels, collected, friendsCount, muted, decor = [], onSetDecor, onNavigate }) {
   const titleRef = useFocusOnMount()
   const [view, setView] = useState('grid')
   const [popping, setPopping] = useState(null)
   const [fact, setFact] = useState(null)
+  const [decorating, setDecorating] = useState(false)
+  const [armed, setArmed] = useState(null) // emoji currently picked up, ready to drop
   const timerRef = useRef(null)
+  const sceneRef = useRef(null)
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
 
   // Tap a friend to learn a fun fact and make it wiggle.
@@ -24,6 +31,20 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setPopping(null), 700)
   }
+
+  // Drop the armed decoration where the yard was tapped (percent coordinates so
+  // it stays put across screen sizes).
+  const placeAt = (e) => {
+    if (!armed || !sceneRef.current || decor.length >= MAX_DECOR) return
+    const r = sceneRef.current.getBoundingClientRect()
+    const x = Math.max(6, Math.min(94, ((e.clientX - r.left) / r.width) * 100))
+    const y = Math.max(8, Math.min(92, ((e.clientY - r.top) / r.height) * 100))
+    const id = `${Date.now()}-${decor.length}-${Math.round(x)}-${Math.round(y)}`
+    if (!muted) playPop()
+    onSetDecor([...decor, { id, emoji: armed, x, y }])
+  }
+  const removeDecor = (id) => onSetDecor(decor.filter((d) => d.id !== id))
+  const stopDecorating = () => { setDecorating(false); setArmed(null) }
 
   const collectedCfgs = levels.filter((_, i) => collected.includes(i + 1))
 
@@ -40,7 +61,7 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
       </header>
 
       <div className="coll-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={view === 'grid'} className={`coll-tab tap${view === 'grid' ? ' is-active' : ''}`} onClick={() => setView('grid')}>
+        <button type="button" role="tab" aria-selected={view === 'grid'} className={`coll-tab tap${view === 'grid' ? ' is-active' : ''}`} onClick={() => { setView('grid'); stopDecorating() }}>
           Collection
         </button>
         <button type="button" role="tab" aria-selected={view === 'home'} className={`coll-tab tap${view === 'home' ? ' is-active' : ''}`} onClick={() => setView('home')}>
@@ -86,26 +107,81 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
           })}
         </div>
       ) : (
-        <div className="clubhouse">
-          <Scenery scene="meadow" />
-          <div className="clubhouse__yard">
-            {collectedCfgs.length === 0 ? (
-              <p className="clubhouse__empty">Play levels to meet friends — they’ll gather here!</p>
-            ) : (
-              collectedCfgs.map((cfg, i) => (
-                <button
-                  key={cfg.unlock.name}
-                  type="button"
-                  className={`clubhouse__pal tap${popping === cfg.unlock.name ? ' is-pop' : ''}`}
-                  style={{ animationDelay: `${(i % 6) * 0.25}s` }}
-                  aria-label={`${cfg.unlock.name}, tap to learn a fact`}
-                  onClick={() => sayHi(cfg)}
-                >
-                  <span aria-hidden="true">{cfg.unlock.emoji}</span>
-                </button>
-              ))
-            )}
+        <div className={`clubhouse${decorating ? ' clubhouse--edit' : ''}`}>
+          <div className="clubhouse__scene" ref={sceneRef} onClick={decorating ? placeAt : undefined}>
+            <Scenery scene="meadow" />
+
+            {decor.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className="clubhouse__prop"
+                style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                aria-hidden={decorating ? undefined : true}
+                aria-label={decorating ? `Remove ${d.emoji}` : undefined}
+                tabIndex={decorating ? 0 : -1}
+                onClick={decorating ? (e) => { e.stopPropagation(); removeDecor(d.id) } : undefined}
+              >
+                <span aria-hidden="true">{d.emoji}</span>
+              </button>
+            ))}
+
+            <div className="clubhouse__yard">
+              {collectedCfgs.length === 0 && !decorating ? (
+                <p className="clubhouse__empty">Play levels to meet friends — they’ll gather here!</p>
+              ) : (
+                collectedCfgs.map((cfg, i) => (
+                  <button
+                    key={cfg.unlock.name}
+                    type="button"
+                    className={`clubhouse__pal tap${popping === cfg.unlock.name ? ' is-pop' : ''}`}
+                    style={{ animationDelay: `${(i % 6) * 0.25}s` }}
+                    aria-label={`${cfg.unlock.name}, tap to learn a fact`}
+                    disabled={decorating}
+                    onClick={() => sayHi(cfg)}
+                  >
+                    <span aria-hidden="true">{cfg.unlock.emoji}</span>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
+
+          {decorating ? (
+            <div className="decor-tray">
+              <p className="decor-tray__hint">
+                {armed ? 'Now tap your yard to place it! Tap a decoration to remove it.' : 'Pick a decoration to add.'}
+              </p>
+              <div className="decor-tray__props">
+                {PROPS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`decor-prop tap${armed === p ? ' is-armed' : ''}`}
+                    aria-label={`Decoration ${p}`}
+                    aria-pressed={armed === p}
+                    onClick={() => setArmed(armed === p ? null : p)}
+                  >
+                    <span aria-hidden="true">{p}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="decor-tray__actions">
+                <button type="button" className="btn btn--block tap" disabled={decor.length === 0} onClick={() => onSetDecor([])}>
+                  <span aria-hidden="true">🧹</span> Clear
+                </button>
+                <button type="button" className="btn btn--primary btn--block tap" onClick={stopDecorating}>
+                  Done
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="decor-bar">
+              <button type="button" className="btn btn--primary btn--block tap" onClick={() => setDecorating(true)}>
+                <span aria-hidden="true">✎</span> Decorate your home
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -39,9 +39,15 @@ function loadSaved() {
       for (const [k, v] of Object.entries(s.progress || {})) {
         if (valid(Number(k))) progress[Number(k)] = v
       }
+      const decor = Array.isArray(s.decor)
+        ? s.decor
+            .filter((d) => d && typeof d.emoji === 'string' && typeof d.x === 'number' && typeof d.y === 'number')
+            .slice(0, 60)
+        : []
       return {
         progress,
         collected: Array.isArray(s.collected) ? s.collected.filter(valid) : [],
+        decor,
         muted: !!s.muted, music: s.music === undefined ? true : !!s.music, skill: s.skill || 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) },
         badges: Array.isArray(s.badges) ? s.badges : [],
@@ -51,7 +57,7 @@ function loadSaved() {
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], name: '', avatar: '🐰' }
+  return { progress: {}, collected: [], decor: [], muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], name: '', avatar: '🐰' }
 }
 
 function init() {
@@ -72,6 +78,7 @@ function init() {
     practice: false,     // is this a mixed "Surprise Round" (not a real level)?
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
+    decor: saved.decor,  // clubhouse decorations: [{ id, emoji, x, y }]
     muted: saved.muted,  // silences all sound effects (quick-access toggle)
     music: saved.music,  // background music on/off (grown-up settings)
     skill: saved.skill,  // adaptive-difficulty offset, [-2, 3]
@@ -167,12 +174,15 @@ function reducer(state, action) {
       return { ...state, muted: !state.muted }
     case 'TOGGLE_MUSIC':
       return { ...state, music: !state.music }
+    case 'SET_DECOR':
+      return { ...state, decor: action.decor }
     case 'RESET_PROGRESS':
       // Clear everything derived from play so no ghost badge/skill survives.
       return {
         ...state,
         progress: {},
         collected: [],
+        decor: [],
         skill: 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0 },
         badges: [],
@@ -220,12 +230,12 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, name: state.name, avatar: state.avatar }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, decor: state.decor, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, name: state.name, avatar: state.avatar }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.muted, state.music, state.skill, state.stats, state.badges, state.name, state.avatar])
+  }, [state.progress, state.collected, state.decor, state.muted, state.music, state.skill, state.stats, state.badges, state.name, state.avatar])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
@@ -395,6 +405,8 @@ export default function App() {
             collected={state.collected}
             friendsCount={friendsCount}
             muted={state.muted}
+            decor={state.decor}
+            onSetDecor={(decor) => dispatch({ type: 'SET_DECOR', decor })}
             onNavigate={navigate}
           />
         )}
