@@ -453,6 +453,29 @@ button.pill { min-height: var(--tap); }
 }
 .pattern-tile--q { color: var(--eq-accent); background: var(--tint); font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); }
 
+/* Ten-frame: a 2x5 grid; counters fill the top row then the bottom, so the
+   gap to ten is easy to see. */
+.tenframe {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: clamp(210px, 64cqi, 290px);
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--gloss), var(--shadow-sm);
+}
+.tenframe__cell {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(65, 51, 42, 0.32);
+  font-size: clamp(20px, 7cqi, 30px);
+  line-height: 1;
+}
+.tenframe__cell--on { background: var(--tint); }
+
 /* Number line: a pin sits on a tick; the child counts ticks to read it. */
 .numline { width: 100%; padding: var(--s-2) 0; }
 .numline__inner { position: relative; height: 74px; margin: 0 24px; }

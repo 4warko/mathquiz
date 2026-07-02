@@ -92,6 +92,17 @@ function validate(q) {
       assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
       break
     }
+    case 'tenframe': {
+      assert.ok(q.filled >= 1 && q.filled <= 10, 'filled out of range')
+      if (q.make) {
+        assert.ok(q.filled <= 9, 'make-ten needs an empty cell')
+        assert.equal(q.answer, 10 - q.filled)
+      } else {
+        assert.equal(q.answer, q.filled)
+      }
+      validateChoices(q)
+      break
+    }
     case 'numline': {
       assert.ok(q.max >= 5, 'numline max too small')
       assert.ok(q.target >= 0 && q.target <= q.max, 'target out of range')

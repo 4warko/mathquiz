@@ -44,4 +44,8 @@ export const LEVELS = [
   { name: 'Number Line Lake', type: 'numline', max: 10, scene: 'water',  animals: ['🦆'], unlock: { emoji: '🦆', name: 'Quackers' }, accent: '#3f97b3', tint: '#d9eef4' },
   { name: 'Hopscotch Hill',   type: 'numline', max: 10, scene: 'sky',    animals: ['🦘'], unlock: { emoji: '🦘', name: 'Skip' },     accent: '#d99a2b', tint: '#f7edcb' },
   { name: 'Ruler Ridge',      type: 'numline', max: 15, scene: 'meadow', animals: ['🐜'], unlock: { emoji: '🐜', name: 'Andy' },     accent: '#7d9a52', tint: '#e9efd6' },
+  { name: 'Ten-Frame Farm',   type: 'tenframe',            scene: 'meadow', animals: ['🐑'], unlock: { emoji: '🐑', name: 'Woolly' }, accent: '#8a9a5a', tint: '#eef0d8' },
+  { name: 'Counting Coop',    type: 'tenframe',            scene: 'sky',    animals: ['🐓'], unlock: { emoji: '🐓', name: 'Rocky' },  accent: '#e0a93a', tint: '#fbeecf' },
+  { name: 'Make-Ten Meadow',  type: 'tenframe', make: true, scene: 'meadow', animals: ['🐷'], unlock: { emoji: '🐷', name: 'Snout' },  accent: '#d98aa0', tint: '#f7e6ec' },
+  { name: 'Barn Buddies',     type: 'tenframe', make: true, scene: 'sky',    animals: ['🐮'], unlock: { emoji: '🐮', name: 'Moo' },    accent: '#c98a3c', tint: '#f6ebd2' },
 ]

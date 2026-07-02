@@ -27,7 +27,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
     return side === a.side ? 'wrong' : 'idle'
   }
 
-  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond' || q.kind === 'pattern' || q.kind === 'numline'
+  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond' || q.kind === 'pattern' || q.kind === 'numline' || q.kind === 'tenframe'
 
   return (
     <div className="screen screen--play" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
@@ -128,6 +128,16 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
               <div className="pattern-row" aria-hidden="true">
                 {q.seq.map((s, k) => <span key={k} className="pattern-tile">{s}</span>)}
                 <span className="pattern-tile pattern-tile--q">?</span>
+              </div>
+            )}
+
+            {q.kind === 'tenframe' && (
+              <div className="tenframe" aria-hidden="true">
+                {Array.from({ length: 10 }).map((_, k) => (
+                  <span key={k} className={`tenframe__cell${k < q.filled ? ' tenframe__cell--on' : ''}`}>
+                    {k < q.filled ? q.animal : ''}
+                  </span>
+                ))}
               </div>
             )}
 

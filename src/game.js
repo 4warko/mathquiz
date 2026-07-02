@@ -134,6 +134,17 @@ const genOne = (cfg) => {
     }
   }
 
+  if (cfg.type === 'tenframe') {
+    // For "make ten", leave at least one empty cell so there's something to add.
+    const filled = cfg.make ? rand(1, 9) : rand(1, 10)
+    const answer = cfg.make ? 10 - filled : filled
+    return {
+      kind: 'tenframe', filled, make: !!cfg.make, animal: cfg.animals[0], answer,
+      choices: makeChoices(answer),
+      prompt: cfg.make ? 'How many more make 10?' : 'How many are there?',
+    }
+  }
+
   if (cfg.type === 'ncompare') {
     const { lo, hi } = cfg
     let na = rand(lo, hi)
@@ -216,6 +227,7 @@ export const howToPlay = (cfg) => {
   if (cfg.type === 'clock') return 'Look at the clock — what time is it?'
   if (cfg.type === 'shape') return 'Find the shape and tap it!'
   if (cfg.type === 'numline') return 'Count the ticks to the pin — what number is it?'
+  if (cfg.type === 'tenframe') return cfg.make ? 'Fill the ten-frame — how many more make 10?' : 'Count the ten-frame — how many are there?'
   return 'Tap the group with more (or fewer)!'
 }
 

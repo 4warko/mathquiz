@@ -36,4 +36,8 @@ export const FACTS = {
   Quackers: 'A duck’s feathers are so waterproof it stays dry underwater!',
   Skip: 'Kangaroos can’t hop backwards — only forwards!',
   Andy: 'Ants can lift things many times heavier than themselves!',
+  Woolly: 'Sheep can recognize their friends’ faces for years!',
+  Rocky: 'A rooster crows to tell everyone the day has started!',
+  Snout: 'Pigs are so smart they can learn their own names!',
+  Moo: 'Cows have best friends and feel happier together!',
 }
