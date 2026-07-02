@@ -1,7 +1,7 @@
 import useFocusOnMount from '../useFocusOnMount'
 import Scenery from '../components/Scenery'
 
-export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], name = 'Holly', avatar = '🐰', onPlay, onFriends, onPractice, onOpenSettings }) {
+export default function HomeScreen({ totalStars, friendsCount, collectedAnimals = [], name = 'Holly', avatar = '🐰', hat = null, onPlay, onFriends, onPractice, onShop, onOpenSettings }) {
   const titleRef = useFocusOnMount()
   return (
     <div className="screen screen--home home">
@@ -11,7 +11,10 @@ export default function HomeScreen({ totalStars, friendsCount, collectedAnimals 
       </button>
 
       <div className="home__top">
-        <div className="home__hero" aria-hidden="true">{avatar}</div>
+        <div className="home__hero" aria-hidden="true">
+          <span className="avatar-emoji">{avatar}</span>
+          {hat && <span className="avatar-hat">{hat}</span>}
+        </div>
         <h1 className="home__title" ref={titleRef} tabIndex={-1}>{`${name}'s Animal Math`}</h1>
         <p className="home__sub">Let&apos;s practice counting and meet new animal friends!</p>
         <div className="topbar__actions" style={{ marginTop: 'var(--s-2)' }}>
@@ -35,6 +38,9 @@ export default function HomeScreen({ totalStars, friendsCount, collectedAnimals 
         </button>
         <button type="button" className="btn btn--block tap" onClick={onPractice}>
           <span aria-hidden="true">🎲</span> Surprise Round
+        </button>
+        <button type="button" className="btn btn--block tap" onClick={onShop}>
+          <span aria-hidden="true">🛍️</span> Star Shop
         </button>
       </div>
     </div>

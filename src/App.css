@@ -195,6 +195,7 @@ button.pill { min-height: var(--tap); }
 .btn--primary { background: linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%), var(--primary); color: var(--on-primary); }
 .btn--block { width: 100%; }
 .btn--lg { padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); box-shadow: var(--gloss), var(--shadow-lg); }
+.btn--sm { min-height: 44px; padding: var(--s-2) var(--s-3); font-size: var(--fs-sm); border-width: 2.5px; box-shadow: var(--gloss), var(--shadow-sm); }
 .btn:disabled { opacity: 0.5; box-shadow: var(--shadow-sm); cursor: default; }
 
 /* ---------- Bottom navigation (thumb zone) ---------- */
@@ -867,6 +868,61 @@ button.pill { min-height: var(--tap); }
 .decor-prop.is-armed { background: #fff2c9; transform: scale(1.08); box-shadow: var(--gloss), var(--shadow-md); }
 .decor-tray__actions { display: flex; gap: var(--s-2); }
 
+/* ---------- Buddy hat (worn avatar) ---------- */
+.avatar-hat {
+  position: absolute;
+  top: -0.06em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5em;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 1px rgba(65, 51, 42, 0.25));
+}
+
+/* ---------- Star Shop ---------- */
+.screen--shop { background: linear-gradient(#f6efdb, #efe4c9); }
+.shop-preview {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-4) var(--s-5) var(--s-2);
+}
+.shop-preview__buddy {
+  position: relative;
+  font-size: clamp(64px, 26cqi, 104px);
+  line-height: 1;
+  filter: drop-shadow(0 8px 5px rgba(65, 51, 42, 0.22));
+  animation: floaty 2.6s ease-in-out infinite;
+}
+.shop-preview__label { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-md); color: var(--ink); }
+.shop-grid {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-5) var(--s-5);
+  align-content: start;
+}
+.shop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-3) var(--s-2);
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-wobble);
+  box-shadow: var(--shadow-sm);
+}
+.shop-item--worn { background: #fff2c9; }
+.shop-item__emoji { font-size: clamp(32px, 12cqi, 46px); line-height: 1; }
+.shop-item__name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); color: var(--ink); text-align: center; }
+
 /* ---------- Awards ---------- */
 .screen--awards { background: linear-gradient(#f6efdb, #efe4c9); }
 .awards-list {
@@ -910,7 +966,7 @@ button.pill { min-height: var(--tap); }
   padding: max(var(--s-8), env(safe-area-inset-top)) var(--s-6) max(var(--s-6), env(safe-area-inset-bottom));
 }
 .home__top { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); margin-top: var(--s-6); }
-.home__hero { font-size: var(--fs-hero); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
+.home__hero { position: relative; font-size: var(--fs-hero); line-height: 1; animation: floaty 2.6s ease-in-out infinite; }
 .home__title { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-3xl); color: var(--ink); line-height: 1.05; }
 .home__sub { font-size: var(--fs-md); color: var(--ink-soft); }
 .home__actions { display: flex; flex-direction: column; gap: var(--s-3); width: 100%; max-width: 320px; }

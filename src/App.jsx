@@ -3,7 +3,8 @@ import { LEVELS, WORLD_SIZE } from './levels'
 import { genQuestions, genMixed } from './game'
 import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
 import { themeForStars } from './themes'
-import { playCorrect, playWrong, playFanfare, unlockAudio, startMusic, stopMusic } from './sound'
+import { HATS, hatEmoji } from './shop'
+import { playCorrect, playWrong, playFanfare, playPop, unlockAudio, startMusic, stopMusic } from './sound'
 import WelcomeScreen from './screens/WelcomeScreen'
 import HomeScreen from './screens/HomeScreen'
 import MapScreen from './screens/MapScreen'
@@ -12,6 +13,7 @@ import PlayScreen from './screens/PlayScreen'
 import RewardScreen from './screens/RewardScreen'
 import CollectionScreen from './screens/CollectionScreen'
 import AchievementsScreen from './screens/AchievementsScreen'
+import ShopScreen from './screens/ShopScreen'
 import SettingsModal from './components/SettingsModal'
 import './App.css'
 
@@ -44,6 +46,7 @@ function loadSaved() {
             .filter((d) => d && typeof d.emoji === 'string' && typeof d.x === 'number' && typeof d.y === 'number')
             .slice(0, 60)
         : []
+      const hats = Array.isArray(s.hats) ? s.hats.filter((id) => HATS.some((h) => h.id === id)) : []
       return {
         progress,
         collected: Array.isArray(s.collected) ? s.collected.filter(valid) : [],
@@ -51,13 +54,16 @@ function loadSaved() {
         muted: !!s.muted, music: s.music === undefined ? true : !!s.music, skill: s.skill || 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) },
         badges: Array.isArray(s.badges) ? s.badges : [],
+        spent: Number.isFinite(s.spent) ? Math.max(0, s.spent) : 0,
+        hats,
+        hat: hats.includes(s.hat) ? s.hat : null,
         name: s.name || '', avatar: s.avatar || '🐰',
       }
     }
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], decor: [], muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], name: '', avatar: '🐰' }
+  return { progress: {}, collected: [], decor: [], muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], spent: 0, hats: [], hat: null, name: '', avatar: '🐰' }
 }
 
 function init() {
@@ -84,6 +90,9 @@ function init() {
     skill: saved.skill,  // adaptive-difficulty offset, [-2, 3]
     stats: saved.stats,  // { correct, perfect, practiceRounds }
     badges: saved.badges, // unlocked achievement ids
+    spent: saved.spent,  // stars spent in the shop (wallet = earned − spent)
+    hats: saved.hats,    // owned hat ids
+    hat: saved.hat,      // currently-worn hat id (or null)
     newBadges: [],       // ids unlocked by the run just finished (for the reward screen)
     newTheme: null,      // reward theme newly unlocked this run (label or null)
     name: saved.name,    // the player's name (drives titles + cheers)
@@ -176,6 +185,15 @@ function reducer(state, action) {
       return { ...state, music: !state.music }
     case 'SET_DECOR':
       return { ...state, decor: action.decor }
+    case 'BUY_HAT': {
+      const item = HATS.find((h) => h.id === action.id)
+      if (!item || state.hats.includes(item.id)) return state
+      const wallet = Object.values(state.progress).reduce((a, b) => a + b, 0) - state.spent
+      if (wallet < item.cost) return state
+      return { ...state, spent: state.spent + item.cost, hats: [...state.hats, item.id], hat: item.id }
+    }
+    case 'EQUIP_HAT':
+      return { ...state, hat: action.id } // id, or null to take the hat off
     case 'RESET_PROGRESS':
       // Clear everything derived from play so no ghost badge/skill survives.
       return {
@@ -186,6 +204,9 @@ function reducer(state, action) {
         skill: 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0 },
         badges: [],
+        spent: 0,
+        hats: [],
+        hat: null,
         newBadges: [],
         newTheme: null,
       }
@@ -230,19 +251,19 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, decor: state.decor, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, name: state.name, avatar: state.avatar }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, decor: state.decor, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, spent: state.spent, hats: state.hats, hat: state.hat, name: state.name, avatar: state.avatar }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.decor, state.muted, state.music, state.skill, state.stats, state.badges, state.name, state.avatar])
+  }, [state.progress, state.collected, state.decor, state.muted, state.music, state.skill, state.stats, state.badges, state.spent, state.hats, state.hat, state.name, state.avatar])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]')
     if (!meta) return
     const cfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
-    const byScreen = { welcome: '#f6ece0', home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2', awards: '#f4ecd6' }
+    const byScreen = { welcome: '#f6ece0', home: '#f6ece0', map: '#e0ebf2', collection: '#fbf3e2', awards: '#f4ecd6', shop: '#f4ecd6' }
     const color = ['intro', 'play', 'reward'].includes(state.screen) ? (cfg?.tint || PRACTICE_CFG.tint) : byScreen[state.screen] || '#e7dcc4'
     meta.setAttribute('content', color)
   }, [state.screen, state.level, state.pendingLevel, state.practice])
@@ -268,6 +289,12 @@ export default function App() {
   const openIntro = (n) => { if (playable(n)) dispatch({ type: 'OPEN_INTRO', n }) }
   const startLevel = () => { clearTimer(); dispatch({ type: 'START_LEVEL' }) }
   const startPractice = () => { clearTimer(); dispatch({ type: 'START_PRACTICE' }) }
+  const buyHat = (id, cost) => {
+    const wallet = Object.values(state.progress).reduce((a, b) => a + b, 0) - state.spent
+    if (wallet >= cost && !state.muted) playCorrect()
+    dispatch({ type: 'BUY_HAT', id, cost })
+  }
+  const equipHat = (id) => { if (!state.muted) playPop(); dispatch({ type: 'EQUIP_HAT', id }) }
 
   // Sound + haptics; sound respects the mute toggle, haptics are always subtle.
   const feedback = (correct) => {
@@ -302,6 +329,8 @@ export default function App() {
   }
 
   const totalStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
+  const wallet = Math.max(0, totalStars - state.spent) // spendable stars (earned never drops)
+  const equippedHat = hatEmoji(state.hat)
   const friendsCount = state.collected.length
   const activeCfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
   const collectedAnimals = state.collected.map((n) => LEVELS[n - 1].unlock.emoji)
@@ -332,9 +361,11 @@ export default function App() {
             collectedAnimals={collectedAnimals}
             name={displayName}
             avatar={state.avatar}
+            hat={equippedHat}
             onPlay={() => navigate('map')}
             onFriends={() => navigate('collection')}
             onPractice={startPractice}
+            onShop={() => navigate('shop')}
             onOpenSettings={() => setSettingsOpen(true)}
           />
         )}
@@ -413,6 +444,18 @@ export default function App() {
 
         {state.screen === 'awards' && (
           <AchievementsScreen ctx={achCtx} onNavigate={navigate} />
+        )}
+
+        {state.screen === 'shop' && (
+          <ShopScreen
+            wallet={wallet}
+            avatar={state.avatar}
+            hat={state.hat}
+            owned={state.hats}
+            onBuy={buyHat}
+            onEquip={equipHat}
+            onNavigate={navigate}
+          />
         )}
       </div>
 
