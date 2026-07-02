@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from 'react'
 import { LEVELS, WORLD_SIZE } from './levels'
 import { genQuestions, genMixed } from './game'
 import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
+import { themeForStars } from './themes'
 import { playCorrect, playWrong, playFanfare, unlockAudio } from './sound'
 import WelcomeScreen from './screens/WelcomeScreen'
 import HomeScreen from './screens/HomeScreen'
@@ -56,6 +57,7 @@ function init() {
     stats: saved.stats,  // { correct, perfect, practiceRounds }
     badges: saved.badges, // unlocked achievement ids
     newBadges: [],       // ids unlocked by the run just finished (for the reward screen)
+    newTheme: null,      // reward theme newly unlocked this run (label or null)
     name: saved.name,    // the player's name (drives titles + cheers)
     avatar: saved.avatar, // the player's chosen buddy (home hero)
   }
@@ -74,8 +76,9 @@ function finish(state) {
   if (state.practice) {
     const stats = { ...state.stats, practiceRounds: state.stats.practiceRounds + 1 }
     const b = computeBadges({ progress: state.progress, collected: state.collected, stats }, state.badges)
-    return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false, stats, badges: b.badges, newBadges: b.newBadges }
+    return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false, stats, badges: b.badges, newBadges: b.newBadges, newTheme: null }
   }
+  const prevStars = Object.values(state.progress).reduce((a, b) => a + b, 0)
   const prev = state.progress[state.level] || 0
   const isNew = !state.collected.includes(state.level)
   const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
@@ -86,7 +89,9 @@ function finish(state) {
   const worldComplete = state.level % WORLD_SIZE === 0
   const stats = { ...state.stats, perfect: state.stats.perfect + (stars === 3 ? 1 : 0) }
   const b = computeBadges({ progress, collected, stats }, state.badges)
-  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill, stats, badges: b.badges, newBadges: b.newBadges }
+  const newStars = Object.values(progress).reduce((a, b) => a + b, 0)
+  const newTheme = themeForStars(prevStars).id !== themeForStars(newStars).id ? themeForStars(newStars).label : null
+  return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill, stats, badges: b.badges, newBadges: b.newBadges, newTheme }
 }
 
 function reducer(state, action) {
@@ -311,6 +316,8 @@ export default function App() {
             levelNum={state.level}
             practice={state.practice}
             name={displayName}
+            totalStars={totalStars}
+            newTheme={state.newTheme}
             stars={state.earnedStars}
             justNew={state.justNew}
             worldComplete={state.worldComplete}
