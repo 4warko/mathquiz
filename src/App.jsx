@@ -226,12 +226,17 @@ export default function App() {
     return () => window.removeEventListener('pointerdown', unlock)
   }, [])
 
-  // Background music: runs whenever sound is on and music is enabled. The
-  // scheduler stays silent until the AudioContext resumes on first gesture.
+  // Background music: on when sound + music are enabled AND the app is visible,
+  // so the scheduler doesn't keep firing in the background (battery). It stays
+  // silent until the AudioContext resumes on the first gesture.
   useEffect(() => {
-    if (!state.muted && state.music) startMusic()
-    else stopMusic()
-    return () => stopMusic()
+    const sync = () => {
+      if (!state.muted && state.music && document.visibilityState === 'visible') startMusic()
+      else stopMusic()
+    }
+    sync()
+    document.addEventListener('visibilitychange', sync)
+    return () => { document.removeEventListener('visibilitychange', sync); stopMusic() }
   }, [state.muted, state.music])
 
   // Persist progress, collection, and the sound preference whenever they change

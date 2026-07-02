@@ -8,7 +8,9 @@ function getCtx() {
   const AC = window.AudioContext || window.webkitAudioContext
   if (!AC) return null
   if (!ctx) ctx = new AC()
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+  // Resume from any non-running, non-closed state — iOS uses 'interrupted'
+  // (after a call/Siri) as well as 'suspended', and never auto-recovers.
+  if (ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume().catch(() => {})
   return ctx
 }
 

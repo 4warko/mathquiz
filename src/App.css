@@ -476,6 +476,8 @@ button.pill { min-height: var(--tap); }
   line-height: 1;
 }
 .tenframe__cell--on { background: var(--tint); }
+/* Bolden the divide between the two rows of five (the point of a ten-frame). */
+.tenframe__cell:nth-child(-n + 5) { border-bottom: 3px solid var(--ink); }
 
 /* Number line: a pin sits on a tick; the child counts ticks to read it. */
 .numline { width: 100%; padding: var(--s-2) 0; }
@@ -903,13 +905,16 @@ button.pill { min-height: var(--tap); }
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--s-3);
   padding: var(--s-3) var(--s-5) var(--s-5);
   align-content: start;
 }
 .shop-item {
+  flex: 0 0 30%;
+  min-width: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;

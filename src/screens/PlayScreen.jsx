@@ -132,7 +132,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
             )}
 
             {q.kind === 'tenframe' && (
-              <div className="tenframe" aria-hidden="true">
+              <div className="tenframe" role="img" aria-label="A ten-frame">
                 {Array.from({ length: 10 }).map((_, k) => (
                   <span key={k} className={`tenframe__cell${k < q.filled ? ' tenframe__cell--on' : ''}`}>
                     {k < q.filled ? q.animal : ''}
@@ -142,7 +142,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
             )}
 
             {q.kind === 'numline' && (
-              <div className="numline" aria-hidden="true">
+              <div className="numline" role="img" aria-label="A number line with a pin on a tick">
                 <div className="numline__inner">
                   <div className="numline__track" />
                   {Array.from({ length: q.max + 1 }).map((_, k) => (
@@ -156,7 +156,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
             )}
 
             {q.kind === 'clock' && (
-              <div className="clock" aria-hidden="true">
+              <div className="clock" role="img" aria-label="A clock face — read the time">
                 <span className="clock__num clock__num--t">12</span>
                 <span className="clock__num clock__num--r">3</span>
                 <span className="clock__num clock__num--b">6</span>

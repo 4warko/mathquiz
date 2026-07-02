@@ -166,7 +166,11 @@ export default function CollectionScreen({ levels, collected, friendsCount, mute
           {decorating ? (
             <div className="decor-tray">
               <p className="decor-tray__hint">
-                {armed ? 'Tap your yard to place it (or use Place). Tap a decoration to remove it.' : 'Pick a decoration to add.'}
+                {decor.length >= MAX_DECOR
+                  ? 'Your yard is full! Tap a decoration to remove one first.'
+                  : armed
+                    ? 'Tap your yard to place it (or use Place). Tap a decoration to remove it.'
+                    : 'Pick a decoration to add.'}
               </p>
               <div className="decor-tray__props">
                 {PROPS.map((p) => (
