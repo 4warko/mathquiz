@@ -13,7 +13,7 @@ export default function WelcomeScreen({ initialName = '', initialAvatar = '🐰'
 
   return (
     <div className="screen screen--welcome welcome">
-      <div className="welcome__card">
+      <form className="welcome__card" onSubmit={(e) => { e.preventDefault(); if (trimmed) onDone(trimmed, avatar) }}>
         <div className="welcome__hero" aria-hidden="true">{avatar}</div>
         <h1 className="welcome__title" ref={titleRef} tabIndex={-1}>Who&apos;s playing?</h1>
         <p className="welcome__sub">Type your name and pick a buddy!</p>
@@ -27,6 +27,7 @@ export default function WelcomeScreen({ initialName = '', initialAvatar = '🐰'
           aria-label="Your name"
           autoComplete="off"
           autoCapitalize="words"
+          enterKeyHint="done"
           maxLength={12}
         />
 
@@ -47,14 +48,13 @@ export default function WelcomeScreen({ initialName = '', initialAvatar = '🐰'
         </div>
 
         <button
-          type="button"
+          type="submit"
           className="btn btn--primary btn--lg btn--block tap"
           disabled={!trimmed}
-          onClick={() => onDone(trimmed, avatar)}
         >
           Let&apos;s play! <span aria-hidden="true">→</span>
         </button>
-      </div>
+      </form>
     </div>
   )
 }

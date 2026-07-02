@@ -53,7 +53,7 @@
   --gloss: inset 0 2px 0 rgba(255, 255, 255, 0.45); /* top highlight → glossy candy feel */
 
   /* — Fluid type: scales with the frame via container-query units — */
-  --fs-xxs: clamp(10.5px, 3cqi, 13px);
+  --fs-xxs: clamp(11.5px, 3cqi, 13px); /* legibility floor for nav labels / counts */
   --fs-xs:  clamp(12px, 3.4cqi, 15px);
   --fs-sm:  clamp(14px, 3.9cqi, 17px);
   --fs-md:  clamp(16px, 4.6cqi, 20px);
