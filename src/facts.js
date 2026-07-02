@@ -32,4 +32,8 @@ export const FACTS = {
   Dot: 'Ladybugs can have different numbers of spots!',
   Gary: 'Snails carry their homes on their backs!',
   Gecko: 'Geckos can walk straight up walls!',
+  Peep: 'Baby chicks can chirp to their mom before they even hatch!',
+  Quackers: 'A duck’s feathers are so waterproof it stays dry underwater!',
+  Skip: 'Kangaroos can’t hop backwards — only forwards!',
+  Andy: 'Ants can lift things many times heavier than themselves!',
 }

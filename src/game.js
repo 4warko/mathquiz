@@ -115,6 +115,25 @@ const genOne = (cfg) => {
     }
   }
 
+  if (cfg.type === 'numline') {
+    const max = cfg.max || 10
+    const target = rand(1, max)
+    const set = new Set([target])
+    let guard = 0
+    while (set.size < 3 && guard++ < 60) {
+      const d = target + rand(-3, 3)
+      if (d >= 0 && d <= max && d !== target) set.add(d)
+    }
+    // Guarantee three distinct in-range choices even for a tiny line.
+    let f = 0
+    while (set.size < 3 && f <= max) { if (f !== target) set.add(f); f++ }
+    return {
+      kind: 'numline', max, target, answer: target,
+      choices: shuffle([...set]),
+      prompt: 'Which number is the pin on?',
+    }
+  }
+
   if (cfg.type === 'ncompare') {
     const { lo, hi } = cfg
     let na = rand(lo, hi)
@@ -196,6 +215,7 @@ export const howToPlay = (cfg) => {
   if (cfg.type === 'pattern') return 'Spot the pattern — what comes next?'
   if (cfg.type === 'clock') return 'Look at the clock — what time is it?'
   if (cfg.type === 'shape') return 'Find the shape and tap it!'
+  if (cfg.type === 'numline') return 'Count the ticks to the pin — what number is it?'
   return 'Tap the group with more (or fewer)!'
 }
 

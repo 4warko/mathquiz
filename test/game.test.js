@@ -92,6 +92,16 @@ function validate(q) {
       assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
       break
     }
+    case 'numline': {
+      assert.ok(q.max >= 5, 'numline max too small')
+      assert.ok(q.target >= 0 && q.target <= q.max, 'target out of range')
+      assert.equal(q.answer, q.target)
+      assert.equal(q.choices.length, 3)
+      assert.ok(q.choices.includes(q.answer), 'choices must include the answer')
+      assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
+      for (const c of q.choices) assert.ok(c >= 0 && c <= q.max, `choice out of range: ${c}`)
+      break
+    }
     default:
       assert.fail(`unknown question kind: ${q.kind}`)
   }

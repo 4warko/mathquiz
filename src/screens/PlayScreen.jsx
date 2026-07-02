@@ -27,7 +27,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
     return side === a.side ? 'wrong' : 'idle'
   }
 
-  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond' || q.kind === 'pattern'
+  const isNumberQ = q.kind === 'add' || q.kind === 'sub' || q.kind === 'seq' || q.kind === 'bond' || q.kind === 'pattern' || q.kind === 'numline'
 
   return (
     <div className="screen screen--play" style={{ '--accent': cfg.accent, '--tint': cfg.tint }}>
@@ -128,6 +128,20 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
               <div className="pattern-row" aria-hidden="true">
                 {q.seq.map((s, k) => <span key={k} className="pattern-tile">{s}</span>)}
                 <span className="pattern-tile pattern-tile--q">?</span>
+              </div>
+            )}
+
+            {q.kind === 'numline' && (
+              <div className="numline" aria-hidden="true">
+                <div className="numline__inner">
+                  <div className="numline__track" />
+                  {Array.from({ length: q.max + 1 }).map((_, k) => (
+                    <span key={k} className="numline__tick" style={{ left: `${(k / q.max) * 100}%` }} />
+                  ))}
+                  <span className="numline__pin" style={{ left: `${(q.target / q.max) * 100}%` }} />
+                  <span className="numline__end" style={{ left: '0%' }}>0</span>
+                  <span className="numline__end" style={{ left: '100%' }}>{q.max}</span>
+                </div>
               </div>
             )}
 

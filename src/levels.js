@@ -40,4 +40,8 @@ export const LEVELS = [
   { name: 'Puzzle Park',      type: 'shape',   scene: 'sky',    animals: ['🐞'], unlock: { emoji: '🐞', name: 'Dot' },     accent: '#c9503f', tint: '#f6e0da' },
   { name: 'Building Blocks',  type: 'bond',    sumMax: 15, scene: 'meadow', animals: ['🐌'], unlock: { emoji: '🐌', name: 'Gary' },    accent: '#8a8a4a', tint: '#eeeed6' },
   { name: 'Art Corner',       type: 'pattern', colors: 4, unit: 3, scene: 'sky',    animals: ['🦎'], unlock: { emoji: '🦎', name: 'Gecko' },   accent: '#5fa36a', tint: '#dff0e1' },
+  { name: 'Counting Bridge',  type: 'numline', max: 5,  scene: 'meadow', animals: ['🐥'], unlock: { emoji: '🐥', name: 'Peep' },     accent: '#c98a3c', tint: '#f6ebd2' },
+  { name: 'Number Line Lake', type: 'numline', max: 10, scene: 'water',  animals: ['🦆'], unlock: { emoji: '🦆', name: 'Quackers' }, accent: '#3f97b3', tint: '#d9eef4' },
+  { name: 'Hopscotch Hill',   type: 'numline', max: 10, scene: 'sky',    animals: ['🦘'], unlock: { emoji: '🦘', name: 'Skip' },     accent: '#d99a2b', tint: '#f7edcb' },
+  { name: 'Ruler Ridge',      type: 'numline', max: 15, scene: 'meadow', animals: ['🐜'], unlock: { emoji: '🐜', name: 'Andy' },     accent: '#7d9a52', tint: '#e9efd6' },
 ]

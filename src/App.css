@@ -453,6 +453,53 @@ button.pill { min-height: var(--tap); }
 }
 .pattern-tile--q { color: var(--eq-accent); background: var(--tint); font-family: var(--font-display); font-weight: 800; font-size: var(--fs-2xl); }
 
+/* Number line: a pin sits on a tick; the child counts ticks to read it. */
+.numline { width: 100%; padding: var(--s-2) 0; }
+.numline__inner { position: relative; height: 74px; margin: 0 24px; }
+.numline__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44px;
+  height: 8px;
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: var(--r-pill);
+  box-shadow: var(--gloss);
+}
+.numline__tick {
+  position: absolute;
+  top: 40px;
+  width: 3px;
+  height: 16px;
+  background: var(--ink);
+  opacity: 0.5;
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+/* CSS caret so the point lands exactly on the target tick. No transform-based
+   animation here — it would override translateX(-50%) and drift the pin. */
+.numline__pin {
+  position: absolute;
+  top: 22px;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 18px solid var(--primary);
+  filter: drop-shadow(0 2px 1px rgba(65, 51, 42, 0.3));
+}
+.numline__end {
+  position: absolute;
+  top: 56px;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+
 /* Telling-time clock face + word-choice answers. */
 .clock {
   position: relative;
