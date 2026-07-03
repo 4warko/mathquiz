@@ -266,6 +266,10 @@ button.pill { min-height: var(--tap); }
 .node:active:not(:disabled) { filter: brightness(0.96); }
 .node--done { background: #ffe6a3; }
 .node--locked { background: var(--surface-2); cursor: default; }
+/* World-challenge node: a gold trophy capstone at the end of each world. */
+.node--challenge { background: #fff4d6; border-radius: var(--r-wobble); }
+.node--challenge.node--done { background: #ffd873; }
+.node--challenge .node__emoji { font-size: 34px; }
 .node--current { animation: bob 1.3s ease-in-out infinite; }
 .node--current::after {
   content: '';

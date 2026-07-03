@@ -4,7 +4,7 @@ import { genQuestions, genMixed } from './game'
 import { ACHIEVEMENTS, achievementCtx, unlockedIds } from './achievements'
 import { themeForStars } from './themes'
 import { HATS, hatEmoji } from './shop'
-import { sumStars, starsForWrong, worldOf, isPlayable, nextPlayableLevel, worldJustCompleted, walletOf, canBuyHat } from './progress'
+import { starsForWrong, worldOf, isPlayable, nextPlayableLevel, worldJustCompleted, walletOf, canBuyHat, totalStarsAll, worldConfigs, WORLD_COUNT } from './progress'
 import { playCorrect, playWrong, playFanfare, playPop, unlockAudio, startMusic, stopMusic } from './sound'
 import WelcomeScreen from './screens/WelcomeScreen'
 import HomeScreen from './screens/HomeScreen'
@@ -22,6 +22,12 @@ const STORAGE_KEY = 'holly-math-v1'
 const HINT_AFTER = 2 // reveal a hint once the child has missed this many times
 // Synthetic config for the mixed "Surprise Round" (no real level / animal).
 const PRACTICE_CFG = { name: 'Surprise Round', accent: '#d9663d', tint: '#f3ece0', scene: 'sky', unlock: { emoji: '🎲', name: 'Practice' } }
+
+// A world's challenge borrows that world's look, with a trophy buddy.
+function challengeCfg(w) {
+  const first = worldConfigs(w)[0] || PRACTICE_CFG
+  return { name: `World ${w + 1} Challenge`, accent: first.accent, tint: first.tint, scene: first.scene, unlock: { emoji: '🏆', name: 'Challenge' } }
+}
 
 
 function loadSaved() {
@@ -41,10 +47,18 @@ function loadSaved() {
             .slice(0, 60)
         : []
       const hats = Array.isArray(s.hats) ? s.hats.filter((id) => HATS.some((h) => h.id === id)) : []
+      const challenges = {}
+      if (s.challenges && typeof s.challenges === 'object') {
+        for (const [k, v] of Object.entries(s.challenges)) {
+          const w = Number(k)
+          if (Number.isInteger(w) && w >= 0 && w < WORLD_COUNT && Number.isInteger(v) && v >= 1 && v <= 3) challenges[w] = v
+        }
+      }
       return {
         progress,
         collected: Array.isArray(s.collected) ? s.collected.filter(valid) : [],
         decor,
+        challenges,
         muted: !!s.muted, music: s.music === undefined ? true : !!s.music, skill: s.skill || 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0, ...(s.stats || {}) },
         badges: Array.isArray(s.badges) ? s.badges : [],
@@ -57,7 +71,7 @@ function loadSaved() {
   } catch {
     /* ignore malformed / unavailable storage */
   }
-  return { progress: {}, collected: [], decor: [], muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], spent: 0, hats: [], hat: null, name: '', avatar: '🐰' }
+  return { progress: {}, collected: [], decor: [], challenges: {}, muted: false, music: true, skill: 0, stats: { correct: 0, perfect: 0, practiceRounds: 0 }, badges: [], spent: 0, hats: [], hat: null, name: '', avatar: '🐰' }
 }
 
 function init() {
@@ -76,9 +90,11 @@ function init() {
     justNew: false,      // did this run unlock a brand-new animal?
     worldComplete: false, // did this run finish a world (milestone)?
     practice: false,     // is this a mixed "Surprise Round" (not a real level)?
+    challenge: null,     // world index if playing a World Challenge, else null
     progress: saved.progress,   // { [levelNum]: bestStars }
     collected: saved.collected, // [levelNum, ...]
     decor: saved.decor,  // clubhouse decorations: [{ id, emoji, x, y }]
+    challenges: saved.challenges, // { [worldIndex]: bestStars } for World Challenges
     muted: saved.muted,  // silences all sound effects (quick-access toggle)
     music: saved.music,  // background music on/off (grown-up settings)
     skill: saved.skill,  // adaptive-difficulty offset, [-2, 3]
@@ -100,16 +116,29 @@ function computeBadges(input, prevBadges) {
   return { badges: unlocked, newBadges: unlocked.filter((id) => !prevBadges.includes(id)) }
 }
 
+// Did crossing from `prevTotal` to `newTotal` stars unlock a new reward theme?
+const themeUnlock = (prevTotal, newTotal) =>
+  themeForStars(prevTotal).id !== themeForStars(newTotal).id ? themeForStars(newTotal).label : null
+
 // Compute stars, persist the unlock, and move to the reward screen.
 function finish(state) {
   const stars = starsForWrong(state.wrongCount)
+  const prevTotal = totalStarsAll(state.progress, state.challenges)
   // Practice doesn't unlock animals, touch progress, or change skill.
   if (state.practice) {
     const stats = { ...state.stats, practiceRounds: state.stats.practiceRounds + 1 }
-    const b = computeBadges({ progress: state.progress, collected: state.collected, stats }, state.badges)
+    const b = computeBadges({ progress: state.progress, collected: state.collected, stats, challenges: state.challenges }, state.badges)
     return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false, stats, badges: b.badges, newBadges: b.newBadges, newTheme: null }
   }
-  const prevStars = sumStars(state.progress)
+  // World Challenge: score into `challenges`, don't touch levels/collection/skill.
+  if (state.challenge != null) {
+    const w = state.challenge
+    const challenges = { ...state.challenges, [w]: Math.max(state.challenges[w] || 0, stars) }
+    const stats = { ...state.stats, perfect: state.stats.perfect + (stars === 3 ? 1 : 0) }
+    const b = computeBadges({ progress: state.progress, collected: state.collected, stats, challenges }, state.badges)
+    const newTheme = themeUnlock(prevTotal, totalStarsAll(state.progress, challenges))
+    return { ...state, screen: 'reward', earnedStars: stars, justNew: false, worldComplete: false, challenges, stats, badges: b.badges, newBadges: b.newBadges, newTheme }
+  }
   const prev = state.progress[state.level] || 0
   const isNew = !state.collected.includes(state.level)
   const progress = { ...state.progress, [state.level]: Math.max(prev, stars) }
@@ -121,9 +150,8 @@ function finish(state) {
   // (works no matter which order the levels were played in).
   const worldComplete = worldJustCompleted(state.progress, progress, state.level)
   const stats = { ...state.stats, perfect: state.stats.perfect + (stars === 3 ? 1 : 0) }
-  const b = computeBadges({ progress, collected, stats }, state.badges)
-  const newStars = sumStars(progress)
-  const newTheme = themeForStars(prevStars).id !== themeForStars(newStars).id ? themeForStars(newStars).label : null
+  const b = computeBadges({ progress, collected, stats, challenges: state.challenges }, state.badges)
+  const newTheme = themeUnlock(prevTotal, totalStarsAll(progress, state.challenges))
   return { ...state, screen: 'reward', earnedStars: stars, justNew: isNew, worldComplete, progress, collected, skill, stats, badges: b.badges, newBadges: b.newBadges, newTheme }
 }
 
@@ -146,6 +174,7 @@ function reducer(state, action) {
         wrongCount: 0,
         attempts: 0,
         practice: false,
+        challenge: null,
         questions: genQuestions(LEVELS[n - 1], state.skill),
       }
     }
@@ -153,9 +182,16 @@ function reducer(state, action) {
       const pool = LEVELS.filter((_, i) => state.progress[i + 1])
       const configs = pool.length ? pool : [LEVELS[0]]
       return {
-        ...state, screen: 'play', practice: true, level: 0, qIndex: 0,
+        ...state, screen: 'play', practice: true, challenge: null, level: 0, qIndex: 0,
         answered: null, wrongCount: 0, attempts: 0,
         questions: genMixed(configs, state.skill),
+      }
+    }
+    case 'START_CHALLENGE': {
+      return {
+        ...state, screen: 'play', practice: false, challenge: action.w, level: 0, qIndex: 0,
+        answered: null, wrongCount: 0, attempts: 0,
+        questions: genMixed(worldConfigs(action.w), state.skill),
       }
     }
     case 'ANSWER_CORRECT':
@@ -179,7 +215,8 @@ function reducer(state, action) {
     case 'SET_DECOR':
       return { ...state, decor: action.decor }
     case 'BUY_HAT': {
-      if (!canBuyHat(state.progress, state.spent, state.hats, action.id)) return state
+      const total = totalStarsAll(state.progress, state.challenges)
+      if (!canBuyHat(total, state.spent, state.hats, action.id)) return state
       const item = HATS.find((h) => h.id === action.id)
       return { ...state, spent: state.spent + item.cost, hats: [...state.hats, item.id], hat: item.id }
     }
@@ -192,6 +229,8 @@ function reducer(state, action) {
         progress: {},
         collected: [],
         decor: [],
+        challenges: {},
+        challenge: null,
         skill: 0,
         stats: { correct: 0, perfect: 0, practiceRounds: 0 },
         badges: [],
@@ -247,12 +286,12 @@ export default function App() {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ progress: state.progress, collected: state.collected, decor: state.decor, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, spent: state.spent, hats: state.hats, hat: state.hat, name: state.name, avatar: state.avatar }),
+        JSON.stringify({ progress: state.progress, collected: state.collected, decor: state.decor, challenges: state.challenges, muted: state.muted, music: state.music, skill: state.skill, stats: state.stats, badges: state.badges, spent: state.spent, hats: state.hats, hat: state.hat, name: state.name, avatar: state.avatar }),
       )
     } catch {
       /* ignore */
     }
-  }, [state.progress, state.collected, state.decor, state.muted, state.music, state.skill, state.stats, state.badges, state.spent, state.hats, state.hat, state.name, state.avatar])
+  }, [state.progress, state.collected, state.decor, state.challenges, state.muted, state.music, state.skill, state.stats, state.badges, state.spent, state.hats, state.hat, state.name, state.avatar])
 
   // Tint the mobile status bar to match the current screen's top color.
   useEffect(() => {
@@ -276,8 +315,9 @@ export default function App() {
   const openIntro = (n) => { if (playable(n)) dispatch({ type: 'OPEN_INTRO', n }) }
   const startLevel = () => { clearTimer(); dispatch({ type: 'START_LEVEL' }) }
   const startPractice = () => { clearTimer(); dispatch({ type: 'START_PRACTICE' }) }
+  const startChallenge = (w) => { clearTimer(); dispatch({ type: 'START_CHALLENGE', w }) }
   const buyHat = (id, cost) => {
-    if (walletOf(state.progress, state.spent) >= cost && !state.muted) playCorrect()
+    if (walletOf(totalStarsAll(state.progress, state.challenges), state.spent) >= cost && !state.muted) playCorrect()
     dispatch({ type: 'BUY_HAT', id, cost })
   }
   const equipHat = (id) => { if (!state.muted) playPop(); dispatch({ type: 'EQUIP_HAT', id }) }
@@ -314,18 +354,20 @@ export default function App() {
     resolve(side === q.answerSide, { side })
   }
 
-  const totalStars = sumStars(state.progress)
-  const wallet = walletOf(state.progress, state.spent) // spendable stars (earned never drops)
+  const totalStars = totalStarsAll(state.progress, state.challenges)
+  const wallet = walletOf(totalStars, state.spent) // spendable stars (earned never drops)
   const equippedHat = hatEmoji(state.hat)
   const friendsCount = state.collected.length
   const activeCfg = LEVELS[(state.screen === 'intro' ? state.pendingLevel : state.level) - 1]
   const collectedAnimals = state.collected.map((n) => LEVELS[n - 1].unlock.emoji)
-  const worldAnimals = state.worldComplete
-    ? LEVELS.slice(worldOf(state.level) * WORLD_SIZE, worldOf(state.level) * WORLD_SIZE + WORLD_SIZE).map((l) => l.unlock.emoji)
+  // The world whose animals the reward screen should show (challenge or milestone).
+  const rewardWorld = state.challenge != null ? state.challenge : state.worldComplete ? worldOf(state.level) : null
+  const worldAnimals = rewardWorld != null
+    ? LEVELS.slice(rewardWorld * WORLD_SIZE, rewardWorld * WORLD_SIZE + WORLD_SIZE).map((l) => l.unlock.emoji)
     : []
-  const nextLevelNum = state.practice ? null : nextPlayableLevel(state.progress, state.level)
-  const screenCfg = state.practice ? PRACTICE_CFG : activeCfg
-  const achCtx = achievementCtx({ progress: state.progress, collected: state.collected, stats: state.stats })
+  const nextLevelNum = state.practice || state.challenge != null ? null : nextPlayableLevel(state.progress, state.level)
+  const screenCfg = state.challenge != null ? challengeCfg(state.challenge) : state.practice ? PRACTICE_CFG : activeCfg
+  const achCtx = achievementCtx({ progress: state.progress, collected: state.collected, stats: state.stats, challenges: state.challenges })
   const newBadgeObjs = state.newBadges.map((id) => ACHIEVEMENTS.find((a) => a.id === id)).filter(Boolean)
   const displayName = state.name || 'Holly'
 
@@ -360,11 +402,13 @@ export default function App() {
           <MapScreen
             levels={LEVELS}
             progress={state.progress}
+            challenges={state.challenges}
             playable={playable}
             totalStars={totalStars}
             friendsCount={friendsCount}
             name={displayName}
             onStart={openIntro}
+            onChallenge={startChallenge}
             onNavigate={navigate}
             onOpenSettings={() => setSettingsOpen(true)}
           />
@@ -385,6 +429,7 @@ export default function App() {
             cfg={screenCfg}
             levelNum={state.level}
             practice={state.practice}
+            challenge={state.challenge}
             question={state.questions[state.qIndex]}
             qIndex={state.qIndex}
             answered={state.answered}
@@ -402,6 +447,7 @@ export default function App() {
             cfg={screenCfg}
             levelNum={state.level}
             practice={state.practice}
+            challenge={state.challenge}
             name={displayName}
             totalStars={totalStars}
             newTheme={state.newTheme}
@@ -411,7 +457,7 @@ export default function App() {
             worldAnimals={worldAnimals}
             newBadges={newBadgeObjs}
             hasNext={nextLevelNum !== null}
-            onNext={state.practice ? startPractice : () => openIntro(nextLevelNum)}
+            onNext={state.challenge != null ? () => startChallenge(state.challenge) : state.practice ? startPractice : () => openIntro(nextLevelNum)}
             onContinue={() => navigate(state.practice ? 'home' : 'map')}
           />
         )}

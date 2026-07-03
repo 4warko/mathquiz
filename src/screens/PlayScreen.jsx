@@ -2,7 +2,7 @@ import { emojiSize } from '../game'
 import useFocusOnMount from '../useFocusOnMount'
 import Scenery from '../components/Scenery'
 
-export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, answered, hint, muted, onToggleMute, onBack, onAnswer, onAnswerCompare }) {
+export default function PlayScreen({ cfg, levelNum, practice, challenge = null, question, qIndex, answered, hint, muted, onToggleMute, onBack, onAnswer, onAnswerCompare }) {
   const titleRef = useFocusOnMount()
   const q = question || {}
   const a = answered
@@ -55,7 +55,7 @@ export default function PlayScreen({ cfg, levelNum, practice, question, qIndex, 
           >
             <span aria-hidden="true">{muted ? '🔇' : '🔊'}</span>
           </button>
-          <span className="lvl-badge">{practice ? '🎲 Practice' : `Lvl ${levelNum}`}</span>
+          <span className="lvl-badge">{challenge != null ? '🏆 Challenge' : practice ? '🎲 Practice' : `Lvl ${levelNum}`}</span>
         </div>
       </header>
 

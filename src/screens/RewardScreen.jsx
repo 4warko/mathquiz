@@ -9,7 +9,7 @@ const cheersFor = (name) => ({
   1: [`You did it, ${name}! 💪`, 'Nice work — keep it up! 🤸', 'Every champ practices — well done! 🌟'],
 })
 
-export default function RewardScreen({ cfg, levelNum, practice, name = 'Holly', totalStars = 0, newTheme = null, stars, justNew, worldComplete, worldAnimals, newBadges = [], hasNext, onNext, onContinue }) {
+export default function RewardScreen({ cfg, levelNum, practice, challenge = null, name = 'Holly', totalStars = 0, newTheme = null, stars, justNew, worldComplete, worldAnimals, newBadges = [], hasNext, onNext, onContinue }) {
   const headingRef = useFocusOnMount()
   const theme = themeForStars(totalStars)
   const swaying = useMemo(() => rand(0, 1) === 1, [])
@@ -60,7 +60,7 @@ export default function RewardScreen({ cfg, levelNum, practice, name = 'Holly', 
       </div>
 
       <div className="reward__card">
-        <p className="reward__label">{practice ? 'PRACTICE COMPLETE' : `LEVEL ${levelNum} COMPLETE`}</p>
+        <p className="reward__label">{challenge != null ? `WORLD ${challenge + 1} CHALLENGE` : practice ? 'PRACTICE COMPLETE' : `LEVEL ${levelNum} COMPLETE`}</p>
 
         <div className="stars">
           {[0, 1, 2].map((i) => (
@@ -73,9 +73,11 @@ export default function RewardScreen({ cfg, levelNum, practice, name = 'Holly', 
         <div className={`reward__animal${swaying ? ' reward__animal--sway' : ''}`} aria-hidden="true">{cfg.unlock.emoji}</div>
 
         <h1 className="reward__title" ref={headingRef} tabIndex={-1}>
-          {practice ? 'Great practice! 🎲' : justNew ? `You found ${cfg.unlock.name}! 🎉` : `${cfg.unlock.name} is so proud!`}
+          {challenge != null ? 'Challenge complete! 🏆' : practice ? 'Great practice! 🎲' : justNew ? `You found ${cfg.unlock.name}! 🎉` : `${cfg.unlock.name} is so proud!`}
         </h1>
-        {practice ? (
+        {challenge != null ? (
+          <p className="reward__sub">You beat the whole world!</p>
+        ) : practice ? (
           <p className="reward__sub">You reviewed lots of skills</p>
         ) : justNew ? (
           <p className="reward__sub">A new friend joined your collection</p>
@@ -83,7 +85,7 @@ export default function RewardScreen({ cfg, levelNum, practice, name = 'Holly', 
 
         <div className="reward__cheer">{cheer}</div>
 
-        {worldComplete && worldAnimals.length > 0 && (
+        {(worldComplete || challenge != null) && worldAnimals.length > 0 && (
           <div className="reward__world-animals" aria-hidden="true">
             {worldAnimals.map((e, i) => <span key={i}>{e}</span>)}
           </div>
@@ -110,7 +112,16 @@ export default function RewardScreen({ cfg, levelNum, practice, name = 'Holly', 
         )}
 
         <div className="reward__actions">
-          {practice ? (
+          {challenge != null ? (
+            <>
+              <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onNext}>
+                <span aria-hidden="true">🏆</span> Play again
+              </button>
+              <button type="button" className="btn btn--block tap" onClick={onContinue}>
+                <span aria-hidden="true">🗺️</span> Back to map
+              </button>
+            </>
+          ) : practice ? (
             <>
               <button type="button" className="btn btn--primary btn--lg btn--block tap" onClick={onNext}>
                 <span aria-hidden="true">🎲</span> Play again

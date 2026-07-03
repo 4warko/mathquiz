@@ -5,6 +5,7 @@ import { HATS } from '../src/shop.js'
 import {
   sumStars, starsForWrong, worldOf, isWorldDone, isPlayable,
   nextPlayableLevel, worldJustCompleted, walletOf, canBuyHat,
+  WORLD_COUNT, worldConfigs, isChallengeReady, sumChallengeStars, challengesBeaten, totalStarsAll,
 } from '../src/progress.js'
 
 // Helper: mark every level of world w (0-based) complete with 3 stars.
@@ -68,17 +69,27 @@ test('worldJustCompleted fires only on the completing clear', () => {
   assert.equal(worldJustCompleted({ 1: 3 }, { 1: 3, 2: 3 }, 2), false) // still not done
 })
 
-test('walletOf clamps at zero and subtracts spent', () => {
-  assert.equal(walletOf({ 1: 3, 2: 3 }, 2), 4)
-  assert.equal(walletOf({ 1: 3 }, 5), 0) // never negative
-  assert.equal(walletOf({}, 0), 0)
+test('walletOf clamps at zero and subtracts spent from a stars total', () => {
+  assert.equal(walletOf(12, 2), 10)
+  assert.equal(walletOf(3, 5), 0) // never negative
+  assert.equal(walletOf(0, 0), 0)
 })
 
 test('canBuyHat guards affordability, ownership, and unknown ids', () => {
   const item = HATS[0]
-  const rich = withWorld({}, 0) // 12 stars
-  assert.equal(canBuyHat(rich, 0, [], item.id), true)
-  assert.equal(canBuyHat(rich, 0, [item.id], item.id), false) // already owned
-  assert.equal(canBuyHat(rich, 12, [], item.id), false) // wallet 0, can't afford
-  assert.equal(canBuyHat(rich, 0, [], 'not-a-hat'), false)
+  assert.equal(canBuyHat(12, 0, [], item.id), true)
+  assert.equal(canBuyHat(12, 0, [item.id], item.id), false) // already owned
+  assert.equal(canBuyHat(12, 12, [], item.id), false) // wallet 0, can't afford
+  assert.equal(canBuyHat(12, 0, [], 'not-a-hat'), false)
+})
+
+test('challenge helpers: pool, readiness, stars, beaten count, grand total', () => {
+  assert.equal(worldConfigs(0).length, WORLD_SIZE)
+  assert.equal(isChallengeReady({}, 0), false)
+  assert.equal(isChallengeReady(withWorld({}, 0), 0), true)
+  assert.equal(sumChallengeStars({ 0: 3, 1: 2 }), 5)
+  assert.equal(sumChallengeStars({}), 0)
+  assert.equal(challengesBeaten({ 0: 3, 1: 0, 2: 1 }), 2) // only stars >= 1 count
+  assert.equal(totalStarsAll({ 1: 3, 2: 3 }, { 0: 2 }), 8) // 6 level + 2 challenge
+  assert.ok(WORLD_COUNT >= 1)
 })

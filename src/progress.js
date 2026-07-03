@@ -46,12 +46,24 @@ export const worldJustCompleted = (prevProgress, newProgress, level) => {
   return !isWorldDone(prevProgress, w) && isWorldDone(newProgress, w)
 }
 
-// Star Shop: spendable balance (earned never drops — the pill stays lifetime).
-export const walletOf = (progress, spent) => Math.max(0, sumStars(progress) - (spent || 0))
+// ---- World challenges (a mixed-review capstone per world) ----
+export const WORLD_COUNT = Math.ceil(LEVELS.length / WORLD_SIZE)
+// The level configs that make up a world (its mixed-review pool).
+export const worldConfigs = (w) => LEVELS.slice(w * WORLD_SIZE, w * WORLD_SIZE + WORLD_SIZE)
+// A world's challenge is available once all its levels are complete.
+export const isChallengeReady = (progress, w) => isWorldDone(progress, w)
+export const sumChallengeStars = (challenges = {}) => Object.values(challenges).reduce((a, b) => a + Number(b || 0), 0)
+export const challengesBeaten = (challenges = {}) => Object.values(challenges).filter((s) => s >= 1).length
+
+// Lifetime stars = level stars + challenge stars (drives the pill, themes, shop).
+export const totalStarsAll = (progress, challenges) => sumStars(progress) + sumChallengeStars(challenges)
+
+// Star Shop: spendable balance from a stars total (earned never drops).
+export const walletOf = (totalStars, spent) => Math.max(0, totalStars - (spent || 0))
 
 // Whether a hat purchase is allowed: real hat, not already owned, affordable.
-export const canBuyHat = (progress, spent, owned, id) => {
+export const canBuyHat = (totalStars, spent, owned, id) => {
   const item = HATS.find((h) => h.id === id)
   if (!item || owned.includes(id)) return false
-  return walletOf(progress, spent) >= item.cost
+  return walletOf(totalStars, spent) >= item.cost
 }

@@ -23,7 +23,9 @@ test('a fully completed state unlocks every badge', () => {
   const progress = {}
   const collected = []
   for (let i = 1; i <= LEVELS.length; i++) { progress[i] = 3; collected.push(i) }
-  const ctx = achievementCtx({ progress, collected, stats: { correct: 500, perfect: 20, practiceRounds: 10 } })
+  const challenges = {}
+  for (let w = 0; w < Math.ceil(LEVELS.length / WORLD_SIZE); w++) challenges[w] = 3
+  const ctx = achievementCtx({ progress, collected, stats: { correct: 500, perfect: 20, practiceRounds: 10 }, challenges })
   assert.equal(unlockedIds(ctx).length, ACHIEVEMENTS.length)
 })
 

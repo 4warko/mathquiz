@@ -14,11 +14,14 @@ export const ACHIEVEMENTS = [
   { id: 'champion', icon: '👑', title: 'Champion', desc: 'Finish every world', target: Math.ceil(LEVELS.length / WORLD_SIZE), value: (c) => c.worlds },
   { id: 'practicePro', icon: '🎲', title: 'Practice Pro', desc: 'Play 5 Surprise Rounds', target: 5, value: (c) => c.practiceRounds },
   { id: 'starCollector', icon: '✨', title: 'Star Collector', desc: 'Earn 30 stars', target: 30, value: (c) => c.stars },
+  { id: 'challenger', icon: '🏅', title: 'Challenger', desc: 'Beat a World Challenge', target: 1, value: (c) => c.challengesBeaten },
+  { id: 'bossMaster', icon: '🏆', title: 'Boss Master', desc: 'Beat every World Challenge', target: Math.ceil(LEVELS.length / WORLD_SIZE), value: (c) => c.challengesBeaten },
 ]
 
 // Derive the achievement context from persisted state.
-export function achievementCtx({ progress = {}, collected = [], stats = {} }) {
-  const stars = Object.values(progress).reduce((a, b) => a + b, 0)
+export function achievementCtx({ progress = {}, collected = [], stats = {}, challenges = {} }) {
+  const levelStars = Object.values(progress).reduce((a, b) => a + b, 0)
+  const challengeStars = Object.values(challenges).reduce((a, b) => a + Number(b || 0), 0)
   const worldCount = Math.ceil(LEVELS.length / WORLD_SIZE)
   let worlds = 0
   for (let w = 0; w < worldCount; w++) {
@@ -27,12 +30,13 @@ export function achievementCtx({ progress = {}, collected = [], stats = {} }) {
     if (slice.length && slice.every((_, i) => progress[start + i + 1])) worlds++
   }
   return {
-    stars,
+    stars: levelStars + challengeStars, // total, so Star Collector counts challenge stars too
     friends: collected.length,
     worlds,
     correct: stats.correct || 0,
     perfect: stats.perfect || 0,
     practiceRounds: stats.practiceRounds || 0,
+    challengesBeaten: Object.values(challenges).filter((s) => s >= 1).length,
   }
 }
 
