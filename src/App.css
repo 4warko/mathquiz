@@ -72,15 +72,15 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  animation: fadeUp 0.32s ease;
+  animation: fadeUp 0.32s var(--ease-out);
 }
-.screen--map { background: linear-gradient(180deg, #dcecf6 0%, #eef3e6 52%, var(--surface) 100%); }
+.screen--map { background: linear-gradient(180deg, #d6ecff 0%, #eafaff 55%, var(--surface) 100%); }
 .screen--play { background: linear-gradient(var(--tint), var(--surface)); }
 .screen--intro { background: linear-gradient(160deg, var(--tint), var(--surface)); }
-.screen--collection { background: linear-gradient(#fbf3e2, #f3ead4); }
-.screen--home { background: radial-gradient(circle at 50% 22%, #fff6ea, #f4ead2); }
+.screen--collection { background: linear-gradient(#fff2e2, #ffe7f3); }
+.screen--home { background: radial-gradient(circle at 50% 20%, #fff6e2, #ffe6f3); }
 .screen--reward {
-  background: radial-gradient(circle at 50% 28%, #fff8ee, var(--tint));
+  background: radial-gradient(circle at 50% 26%, #ffffff, var(--tint));
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -89,8 +89,8 @@
   padding: var(--s-8) var(--s-6) max(var(--s-8), env(safe-area-inset-bottom));
 }
 /* Directional screen transitions (base .screen uses fadeUp). */
-.screen--play, .screen--intro { animation: slideInRight 0.34s ease; }
-.screen--reward { animation: screenPop 0.5s ease; }
+.screen--play, .screen--intro { animation: slideInRight 0.34s var(--ease-out); }
+.screen--reward { animation: screenPop 0.5s var(--ease-bounce); }
 
 .scroll {
   flex: 1;
@@ -133,7 +133,7 @@
 .tap {
   /* Kill iOS double-tap-to-zoom + tap delay on controls (pinch-zoom stays). */
   touch-action: manipulation;
-  transition: transform var(--t-fast) ease, box-shadow var(--t-fast) ease, background var(--t-fast) ease;
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
 }
 .tap:active:not(:disabled) {
   transform: translateY(2px);
@@ -174,7 +174,12 @@
 .pill--friends { background: #d9edc7; }
 button.pill { min-height: var(--tap); }
 
+/* "Pushable 3D" button: a solid bottom edge (var(--edge)) makes it read as a
+   physical key. Pressing sinks it by exactly the edge height. Variants set
+   --edge (colour), sizes set --lift (depth), so they compose cleanly. */
 .btn {
+  --edge: var(--btn-edge);
+  --lift: 5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -186,17 +191,22 @@ button.pill { min-height: var(--tap); }
   background: var(--surface);
   color: var(--ink);
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: var(--fs-lg);
-  box-shadow: var(--gloss), var(--shadow-md);
+  box-shadow: var(--gloss), 0 var(--lift) 0 var(--edge), 0 calc(var(--lift) + 4px) 14px rgba(46, 42, 71, 0.16);
 }
 /* Primary CTA is always the accessible brand orange for a consistent,
    high-contrast action color (per-world accent stays decorative). */
-.btn--primary { background: linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%), var(--primary); color: var(--on-primary); }
+.btn--primary { --edge: var(--primary-edge); background: linear-gradient(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%), var(--primary); color: var(--on-primary); }
+.btn--danger { --edge: var(--wrong-edge); }
 .btn--block { width: 100%; }
-.btn--lg { padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); box-shadow: var(--gloss), var(--shadow-lg); }
-.btn--sm { min-height: 44px; padding: var(--s-2) var(--s-3); font-size: var(--fs-sm); border-width: 2.5px; box-shadow: var(--gloss), var(--shadow-sm); }
-.btn:disabled { opacity: 0.5; box-shadow: var(--shadow-sm); cursor: default; }
+.btn--lg { --lift: 6px; padding: var(--s-4) var(--s-8); font-size: var(--fs-xl); }
+.btn--sm { --lift: 4px; min-height: 44px; padding: var(--s-2) var(--s-3); font-size: var(--fs-sm); border-width: 2.5px; }
+.btn:not(:disabled):active { transform: translateY(var(--lift)); box-shadow: var(--gloss), 0 0 0 var(--edge); }
+.btn:disabled { opacity: 0.55; box-shadow: var(--gloss), 0 2px 0 var(--edge); cursor: default; }
+@media (hover: hover) {
+  .btn:not(:disabled):hover { transform: translateY(-2px); }
+}
 
 /* ---------- Bottom navigation (thumb zone) ---------- */
 .bottom-nav {
@@ -588,7 +598,7 @@ button.pill { min-height: var(--tap); }
   border-radius: var(--r-wobble);
   box-shadow: var(--gloss), var(--shadow-md);
 }
-.choice[data-state='correct'] { background: var(--correct); transform: scale(1.06); }
+.choice[data-state='correct'] { background: var(--correct); animation: choicePop 0.45s var(--ease-bounce) forwards; }
 .choice[data-state='wrong'] { background: var(--wrong); animation: shake 0.4s ease; }
 .choice[data-state='dim'] { opacity: 0.4; }
 .choice[data-state='hint'] { border-color: var(--success); animation: hintPulse 1.1s ease-in-out infinite; }
@@ -902,7 +912,7 @@ button.pill { min-height: var(--tap); }
 }
 
 /* ---------- Star Shop ---------- */
-.screen--shop { background: linear-gradient(#f6efdb, #efe4c9); }
+.screen--shop { background: linear-gradient(#fff2d6, #ffe6c4); }
 .shop-preview {
   flex: 0 0 auto;
   display: flex;
@@ -952,7 +962,7 @@ button.pill { min-height: var(--tap); }
 .shop-item__name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); color: var(--ink); text-align: center; }
 
 /* ---------- Awards ---------- */
-.screen--awards { background: linear-gradient(#f6efdb, #efe4c9); }
+.screen--awards { background: linear-gradient(#fff2d6, #ffe6c4); }
 .awards-list {
   flex: 1;
   overflow-y: auto;
@@ -1183,7 +1193,8 @@ button.pill { min-height: var(--tap); }
    ============================================================ */
 @media (min-width: 640px) {
   .app-frame {
-    height: min(920px, 94dvh);
+    max-width: 600px; /* immersive on tablets — cqi-based type scales up with the frame */
+    height: min(1000px, 94dvh);
     border-radius: 40px;
     border: 3px solid var(--ink);
     box-shadow: var(--shadow-ambient);
@@ -1233,14 +1244,23 @@ button.pill { min-height: var(--tap); }
    world reads as "ready to play", not just the one pulsing node. */
 .node--open::before { opacity: 0.9; }
 
-/* Win juice: a ring burst on the correct answer. */
+/* Win juice: a double ring burst (green then gold) on the correct answer. */
 .choice[data-state='correct']::after, .panel[data-state='correct']::after, .time-choice[data-state='correct']::after {
   content: '';
   position: absolute;
   inset: -4px;
   border-radius: inherit;
   border: 3px solid var(--success);
-  animation: burst 0.55s ease-out forwards;
+  animation: burst 0.55s var(--ease-out) forwards;
+  pointer-events: none;
+}
+.choice[data-state='correct']::before, .panel[data-state='correct']::before, .time-choice[data-state='correct']::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 4px solid var(--star);
+  animation: burst 0.7s var(--ease-out) 0.07s forwards;
   pointer-events: none;
 }
 
@@ -1298,8 +1318,13 @@ button.pill { min-height: var(--tap); }
   50% { transform: translateY(-14px) rotate(4deg); }
 }
 @keyframes burst {
-  from { transform: scale(0.7); opacity: 0.7; }
-  to { transform: scale(1.5); opacity: 0; }
+  from { transform: scale(0.7); opacity: 0.8; }
+  to { transform: scale(1.7); opacity: 0; }
+}
+@keyframes choicePop {
+  0% { transform: scale(1); }
+  55% { transform: scale(1.18); }
+  100% { transform: scale(1.1); }
 }
 @keyframes trailFlow { to { background-position: 0 26px; } }
 @keyframes nodePulse {
