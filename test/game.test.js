@@ -92,6 +92,17 @@ function validate(q) {
       assert.equal(new Set(q.choices).size, 3, 'choices must be distinct')
       break
     }
+    case 'measure': {
+      assert.ok(['size', 'tall', 'long'].includes(q.attr), `bad attr ${q.attr}`)
+      assert.ok(['A', 'B'].includes(q.answerSide))
+      assert.notEqual(q.magA, q.magB, 'magnitudes must differ')
+      assert.ok(q.magA >= 1 && q.magA <= 5 && q.magB >= 1 && q.magB <= 5)
+      const bigger = q.magA > q.magB ? 'A' : 'B'
+      const wantBig = ['big', 'tall', 'long'].includes(q.want)
+      assert.equal(q.answerSide, wantBig ? bigger : bigger === 'A' ? 'B' : 'A', 'answerSide must match want')
+      assert.equal(typeof q.prompt, 'string')
+      break
+    }
     case 'tenframe': {
       assert.ok(q.filled >= 1 && q.filled <= 10, 'filled out of range')
       if (q.make) {

@@ -232,6 +232,32 @@ export default function PlayScreen({ cfg, levelNum, practice, challenge = null, 
             ))}
           </div>
         )}
+
+        {q.kind === 'measure' && (
+          <div className="compare">
+            {[
+              { side: 'A', mag: q.magA },
+              { side: 'B', mag: q.magB },
+            ].map((p) => (
+              <button
+                key={p.side}
+                type="button"
+                className={`panel panel--measure panel--${q.attr} tap`}
+                data-state={cmpState(p.side)}
+                aria-label={`Choice ${p.side}`}
+                onClick={() => onAnswerCompare(p.side)}
+              >
+                {q.attr === 'size' ? (
+                  <span className="measure-emoji" style={{ fontSize: `${20 + p.mag * 12}px` }} aria-hidden="true">{q.animal}</span>
+                ) : q.attr === 'tall' ? (
+                  <span className="measure-bar measure-bar--v" style={{ height: `${20 + p.mag * 20}px` }} aria-hidden="true" />
+                ) : (
+                  <span className="measure-bar measure-bar--h" style={{ width: `${20 + p.mag * 18}px` }} aria-hidden="true" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -40,4 +40,8 @@ export const FACTS = {
   Rocky: 'A rooster crows to tell everyone the day has started!',
   Snout: 'Pigs are so smart they can learn their own names!',
   Moo: 'Cows have best friends and feel happier together!',
+  Bubba: 'The blue whale is the biggest animal that has ever lived!',
+  Rex: 'Some dinosaurs were taller than a house!',
+  Inch: 'A tiny caterpillar has thousands of little muscles!',
+  Squeak: 'A mouse can squeeze through a hole the size of a pencil!',
 }

@@ -615,6 +615,16 @@ button.pill { min-height: var(--tap); }
 .panel--num { min-height: 120px; }
 .num-big { font-family: var(--font-display); font-weight: 800; font-size: clamp(52px, 20cqi, 88px); color: var(--ink); line-height: 1; }
 
+/* Measurement panels: compare a physical attribute, not a count. Options share
+   a baseline so the difference is a fair, honest comparison. */
+.panel--measure { min-height: 168px; padding: var(--s-4) var(--s-3); }
+.panel--size, .panel--tall { align-items: flex-end; justify-content: center; }
+.panel--long { align-items: center; justify-content: flex-start; }
+.measure-emoji { line-height: 1; }
+.measure-bar { display: block; background: var(--accent); border: 3px solid var(--ink); box-shadow: var(--gloss); }
+.measure-bar--v { width: 46px; border-radius: 10px 10px 0 0; }
+.measure-bar--h { height: 38px; border-radius: 0 10px 10px 0; }
+
 .toast {
   align-self: center;
   padding: var(--s-3) var(--s-6);

@@ -48,4 +48,8 @@ export const LEVELS = [
   { name: 'Counting Coop',    type: 'tenframe',            scene: 'sky',    animals: ['🐓'], unlock: { emoji: '🐓', name: 'Rocky' },  accent: '#e0a93a', tint: '#fbeecf' },
   { name: 'Make-Ten Meadow',  type: 'tenframe', make: true, scene: 'meadow', animals: ['🐷'], unlock: { emoji: '🐷', name: 'Snout' },  accent: '#d98aa0', tint: '#f7e6ec' },
   { name: 'Barn Buddies',     type: 'tenframe', make: true, scene: 'sky',    animals: ['🐮'], unlock: { emoji: '🐮', name: 'Moo' },    accent: '#c98a3c', tint: '#f6ebd2' },
+  { name: 'Big & Small',      type: 'measure', attr: 'size', scene: 'water',  animals: ['🐋'], unlock: { emoji: '🐋', name: 'Bubba' },  accent: '#4d86c4', tint: '#d6e3f2' },
+  { name: 'Tall & Short',     type: 'measure', attr: 'tall', scene: 'meadow', animals: ['🦕'], unlock: { emoji: '🦕', name: 'Rex' },    accent: '#6fa03e', tint: '#e5efce' },
+  { name: 'Long & Short',     type: 'measure', attr: 'long', scene: 'meadow', animals: ['🐛'], unlock: { emoji: '🐛', name: 'Inch' },   accent: '#7fb069', tint: '#eef3d9' },
+  { name: 'Measure Mix',      type: 'measure', attr: 'mix',  scene: 'sky',    animals: ['🐁'], unlock: { emoji: '🐁', name: 'Squeak' }, accent: '#8a8a7a', tint: '#ecebe2' },
 ]

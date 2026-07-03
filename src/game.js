@@ -145,6 +145,23 @@ const genOne = (cfg) => {
     }
   }
 
+  if (cfg.type === 'measure') {
+    // Compare a physical attribute (size / height / length), not a count.
+    const attr = cfg.attr === 'mix' ? ['size', 'tall', 'long'][rand(0, 2)] : cfg.attr
+    // Two clearly different magnitudes (1-2 vs 4-5) so the difference is obvious.
+    const lo = rand(1, 2)
+    const hi = rand(4, 5)
+    const aIsHi = rand(0, 1) === 1
+    const magA = aIsHi ? hi : lo
+    const magB = aIsHi ? lo : hi
+    const biggerSide = magA > magB ? 'A' : 'B'
+    const want = { size: ['big', 'small'], tall: ['tall', 'short'], long: ['long', 'short'] }[attr][rand(0, 1)]
+    const wantBig = want === 'big' || want === 'tall' || want === 'long'
+    const answerSide = wantBig ? biggerSide : biggerSide === 'A' ? 'B' : 'A'
+    const prompts = { big: 'Tap the BIGGER one', small: 'Tap the SMALLER one', tall: 'Tap the TALLER one', short: 'Tap the SHORTER one', long: 'Tap the LONGER one' }
+    return { kind: 'measure', attr, magA, magB, animal: cfg.animals[0], want, answerSide, prompt: prompts[want] }
+  }
+
   if (cfg.type === 'ncompare') {
     const { lo, hi } = cfg
     let na = rand(lo, hi)
@@ -228,6 +245,7 @@ export const howToPlay = (cfg) => {
   if (cfg.type === 'shape') return 'Find the shape and tap it!'
   if (cfg.type === 'numline') return 'Count the ticks to the pin — what number is it?'
   if (cfg.type === 'tenframe') return cfg.make ? 'Fill the ten-frame — how many more make 10?' : 'Count the ten-frame — how many are there?'
+  if (cfg.type === 'measure') return 'Look closely and compare — then tap the right one!'
   return 'Tap the group with more (or fewer)!'
 }
 
